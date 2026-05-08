@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone, Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,26 +7,55 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
-  beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw redirect({ to: "/login" });
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
-    if (!data?.some(r => r.role === "admin")) throw redirect({ to: "/home" });
-  },
 });
 
 type Tab = "stats" | "deposits" | "games" | "users" | "methods" | "banners" | "broadcast";
 
 function AdminPage() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, isAdmin, loading, roleLoading } = useAuth();
   const [tab, setTab] = useState<Tab>("stats");
+
+  useEffect(() => {
+    if (loading || roleLoading) return;
+    if (!user) {
+      navigate({ to: "/login", search: { redirect: "/admin" } as never, replace: true });
+      return;
+    }
+    if (!isAdmin) {
+      toast.error("Admin access required");
+      navigate({ to: "/home", replace: true });
+    }
+  }, [user, isAdmin, loading, roleLoading, navigate]);
+
+  if (loading || roleLoading) {
+    return <div className="min-h-[70vh] grid place-items-center text-sm text-muted-foreground">Loading admin panel…</div>;
+  }
+
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   return (
     <div className="px-5 pt-5 pb-6 space-y-4">
       <div className="flex items-center gap-2">
         <ShieldCheck className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-display font-bold">Admin Panel</h1>
+      </div>
+
+      <div className="bg-gradient-card border border-border rounded-2xl p-4 grid grid-cols-3 gap-3">
+        <div>
+          <p className="text-[11px] text-muted-foreground">Access</p>
+          <p className="font-semibold text-primary">Admin verified</p>
+        </div>
+        <div>
+          <p className="text-[11px] text-muted-foreground">Operator</p>
+          <p className="font-semibold truncate">{user.email}</p>
+        </div>
+        <div>
+          <p className="text-[11px] text-muted-foreground">Controls</p>
+          <p className="font-semibold">Live</p>
+        </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
