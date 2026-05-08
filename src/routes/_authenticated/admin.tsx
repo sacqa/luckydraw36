@@ -199,7 +199,7 @@ function GamesTab() {
     load();
   }
 
-  async function toggleStatus(g: any, status: string) {
+  async function toggleStatus(g: any, status: "live" | "upcoming" | "completed" | "cancelled") {
     await supabase.from("games").update({ status }).eq("id", g.id);
     load();
   }
