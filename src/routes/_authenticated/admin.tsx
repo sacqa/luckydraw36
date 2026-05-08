@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "stats" | "deposits" | "games" | "users" | "methods" | "banners" | "broadcast";
+type Tab = "stats" | "activity" | "deposits" | "games" | "users" | "methods" | "banners" | "broadcast";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -61,6 +61,7 @@ function AdminPage() {
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {([
           ["stats", BarChart3, "Stats"],
+          ["activity", ShieldCheck, "Activity"],
           ["deposits", CreditCard, "Deposits"],
           ["games", Sparkles, "Games"],
           ["users", Users, "Users"],
@@ -75,6 +76,7 @@ function AdminPage() {
       </div>
 
       {tab === "stats" && <StatsTab />}
+      {tab === "activity" && <ActivityTab />}
       {tab === "deposits" && <DepositsTab adminId={user?.id} />}
       {tab === "games" && <GamesTab />}
       {tab === "users" && <UsersTab />}
@@ -118,6 +120,41 @@ function StatsTab() {
           <p className={`text-xl font-bold mt-1 ${c.color}`}>{c.value}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ActivityTab() {
+  const [activity, setActivity] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("audit_logs")
+      .select("id, action, created_at, actor_id, meta")
+      .order("created_at", { ascending: false })
+      .limit(12)
+      .then(({ data }) => setActivity(data || []));
+  }, []);
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-gradient-card border border-border rounded-2xl p-4">
+        <h2 className="font-display font-bold flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Recent platform activity</h2>
+      </div>
+      {activity.length === 0 ? (
+        <div className="bg-gradient-card border border-border rounded-2xl p-4 text-sm text-muted-foreground">No recent admin activity yet.</div>
+      ) : (
+        activity.map((item) => (
+          <div key={item.id} className="bg-gradient-card border border-border rounded-2xl p-4 space-y-1">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-semibold text-sm break-words">{item.action}</p>
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{new Date(item.created_at).toLocaleString()}</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground break-all">Actor: {item.actor_id || "system"}</p>
+            {item.meta && <pre className="text-[10px] text-muted-foreground bg-secondary rounded-xl p-3 overflow-x-auto">{JSON.stringify(item.meta, null, 2)}</pre>}
+          </div>
+        ))
+      )}
     </div>
   );
 }
