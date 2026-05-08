@@ -18,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
     const fetchRole = async (uid: string) => {
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       applySession(session);
+      setBootstrapped(true);
       setLoading(false);
     });
 
@@ -55,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <Ctx.Provider value={{ user: session?.user ?? null, session, loading, roleLoading, isAdmin, signOut: async () => { await supabase.auth.signOut(); } }}>
+    <Ctx.Provider value={{ user: session?.user ?? null, session, loading: loading && !bootstrapped, roleLoading, isAdmin, signOut: async () => { await supabase.auth.signOut(); } }}>
       {children}
     </Ctx.Provider>
   );
