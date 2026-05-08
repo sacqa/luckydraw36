@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone, Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,20 +7,34 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
-  beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw redirect({ to: "/login" });
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
-    if (!data?.some(r => r.role === "admin")) throw redirect({ to: "/home" });
-  },
 });
 
-type Tab = "stats" | "deposits" | "games" | "users" | "methods" | "banners" | "broadcast";
+type Tab = "stats" | "activity" | "deposits" | "games" | "users" | "methods" | "banners" | "broadcast";
 
 function AdminPage() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, isAdmin, loading, roleLoading } = useAuth();
   const [tab, setTab] = useState<Tab>("stats");
+
+  useEffect(() => {
+    if (loading || roleLoading) return;
+    if (!user) {
+      navigate({ to: "/login", search: { redirect: "/admin" } as never, replace: true });
+      return;
+    }
+    if (!isAdmin) {
+      toast.error("Admin access required");
+      navigate({ to: "/home", replace: true });
+    }
+  }, [user, isAdmin, loading, roleLoading, navigate]);
+
+  if (loading || roleLoading) {
+    return <div className="min-h-[70vh] grid place-items-center text-sm text-muted-foreground">Loading admin panel…</div>;
+  }
+
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   return (
     <div className="px-5 pt-5 pb-6 space-y-4">
@@ -29,9 +43,25 @@ function AdminPage() {
         <h1 className="text-2xl font-display font-bold">Admin Panel</h1>
       </div>
 
+      <div className="bg-gradient-card border border-border rounded-2xl p-4 grid grid-cols-3 gap-3">
+        <div>
+          <p className="text-[11px] text-muted-foreground">Access</p>
+          <p className="font-semibold text-primary">Admin verified</p>
+        </div>
+        <div>
+          <p className="text-[11px] text-muted-foreground">Operator</p>
+          <p className="font-semibold truncate">{user.email}</p>
+        </div>
+        <div>
+          <p className="text-[11px] text-muted-foreground">Controls</p>
+          <p className="font-semibold">Live</p>
+        </div>
+      </div>
+
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {([
           ["stats", BarChart3, "Stats"],
+          ["activity", ShieldCheck, "Activity"],
           ["deposits", CreditCard, "Deposits"],
           ["games", Sparkles, "Games"],
           ["users", Users, "Users"],
@@ -46,6 +76,7 @@ function AdminPage() {
       </div>
 
       {tab === "stats" && <StatsTab />}
+      {tab === "activity" && <ActivityTab />}
       {tab === "deposits" && <DepositsTab adminId={user?.id} />}
       {tab === "games" && <GamesTab />}
       {tab === "users" && <UsersTab />}
@@ -89,6 +120,41 @@ function StatsTab() {
           <p className={`text-xl font-bold mt-1 ${c.color}`}>{c.value}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ActivityTab() {
+  const [activity, setActivity] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("audit_logs")
+      .select("id, action, created_at, actor_id, meta")
+      .order("created_at", { ascending: false })
+      .limit(12)
+      .then(({ data }) => setActivity(data || []));
+  }, []);
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-gradient-card border border-border rounded-2xl p-4">
+        <h2 className="font-display font-bold flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Recent platform activity</h2>
+      </div>
+      {activity.length === 0 ? (
+        <div className="bg-gradient-card border border-border rounded-2xl p-4 text-sm text-muted-foreground">No recent admin activity yet.</div>
+      ) : (
+        activity.map((item) => (
+          <div key={item.id} className="bg-gradient-card border border-border rounded-2xl p-4 space-y-1">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-semibold text-sm break-words">{item.action}</p>
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{new Date(item.created_at).toLocaleString()}</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground break-all">Actor: {item.actor_id || "system"}</p>
+            {item.meta && <pre className="text-[10px] text-muted-foreground bg-secondary rounded-xl p-3 overflow-x-auto">{JSON.stringify(item.meta, null, 2)}</pre>}
+          </div>
+        ))
+      )}
     </div>
   );
 }
