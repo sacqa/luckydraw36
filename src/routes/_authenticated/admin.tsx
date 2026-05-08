@@ -234,9 +234,9 @@ function GamesTab() {
                 <button onClick={() => drawWinner(g)} className="text-xs bg-primary/15 text-primary px-3 py-1.5 rounded-full font-semibold inline-flex items-center gap-1"><Trophy className="h-3 w-3" /> Draw</button>
               )}
               {g.status === "live" ? (
-                <button onClick={() => toggleStatus(g, "paused")} className="text-xs bg-yellow-500/15 text-yellow-400 px-3 py-1.5 rounded-full font-semibold">Pause</button>
-              ) : g.status === "paused" ? (
-                <button onClick={() => toggleStatus(g, "live")} className="text-xs bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full font-semibold">Resume</button>
+                <button onClick={() => toggleStatus(g, "cancelled")} className="text-xs bg-yellow-500/15 text-yellow-400 px-3 py-1.5 rounded-full font-semibold">Cancel</button>
+              ) : g.status === "cancelled" ? (
+                <button onClick={() => toggleStatus(g, "live")} className="text-xs bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full font-semibold">Reactivate</button>
               ) : null}
               <button onClick={() => deleteGame(g.id)} className="text-xs bg-destructive/15 text-destructive px-3 py-1.5 rounded-full font-semibold inline-flex items-center gap-1"><Trash2 className="h-3 w-3" /> Delete</button>
             </div>
