@@ -49,11 +49,18 @@ function ProfilePage() {
         </div>
       </div>
 
-      {isAdmin && (
+      <div className="bg-gradient-card border border-border rounded-3xl p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display font-bold">Admin Panel</h2>
+            <p className="text-xs text-muted-foreground">Open the admin dashboard from your profile.</p>
+          </div>
+          {isAdmin && <span className="text-[10px] uppercase font-bold text-primary bg-primary/15 px-2 py-1 rounded-full">Authorized</span>}
+        </div>
         <button onClick={() => navigate({ to: "/admin" })} className="w-full glass py-3 rounded-2xl font-semibold">
           Open Admin Dashboard
         </button>
-      )}
+      </div>
 
       <button onClick={async () => { await signOut(); navigate({ to: "/" }); }}
         className="w-full bg-destructive/15 text-destructive py-3 rounded-2xl font-semibold inline-flex items-center justify-center gap-2">
