@@ -18,17 +18,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    const fetchRole = (uid: string) => {
+      supabase.from("user_roles").select("role").eq("user_id", uid).then(({ data }) => {
+        setIsAdmin(!!data?.some((r) => r.role === "admin"));
+      });
+    };
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
-      if (s?.user) {
-        setTimeout(async () => {
-          const { data } = await supabase.from("user_roles").select("role").eq("user_id", s.user.id);
-          setIsAdmin(!!data?.some((r) => r.role === "admin"));
-        }, 0);
-      } else setIsAdmin(false);
+      if (s?.user) fetchRole(s.user.id);
+      else setIsAdmin(false);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session?.user) fetchRole(session.user.id);
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
