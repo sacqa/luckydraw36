@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,10 +16,12 @@ export const Route = createFileRoute("/_authenticated")({
 
 function Layout() {
   const { loading } = useAuth();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = pathname.startsWith("/admin");
   if (loading) return <div className="min-h-screen grid place-items-center text-muted-foreground">Loading…</div>;
   return (
     <div className="min-h-screen pb-24 bg-background">
-      <div className="max-w-md mx-auto">
+      <div className={isAdmin ? "w-full" : "max-w-md mx-auto"}>
         <Outlet />
       </div>
       <BottomNav />

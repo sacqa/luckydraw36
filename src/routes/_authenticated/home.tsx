@@ -13,6 +13,7 @@ function HomePage() {
   const [balance, setBalance] = useState(0);
   const [games, setGames] = useState<Game[]>([]);
   const [winners, setWinners] = useState<any[]>([]);
+  const [sections, setSections] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -23,6 +24,8 @@ function HomePage() {
     supabase.from("winners").select("id,prize_value,created_at,games(title,prize_image),profiles:user_id(full_name)")
       .order("created_at", { ascending: false }).limit(5)
       .then(({ data }) => data && setWinners(data));
+    supabase.from("homepage_sections").select("*").eq("is_active", true).order("position")
+      .then(({ data }) => data && setSections(data));
 
     const channel = supabase.channel("home")
       .on("postgres_changes", { event: "*", schema: "public", table: "wallets", filter: `user_id=eq.${user.id}` },
@@ -68,6 +71,24 @@ function HomePage() {
         <Link to="/admin" className="mx-5 mt-4 block bg-gradient-card border border-primary/30 rounded-2xl p-3 text-center text-sm font-semibold">
           Open Admin Dashboard →
         </Link>
+      )}
+
+      {sections.length > 0 && (
+        <div className="px-5 pt-5 space-y-3">
+          {sections.map(s => (
+            <div key={s.id} className="bg-gradient-card border border-border rounded-2xl overflow-hidden">
+              {s.image_url && <img src={s.image_url} className="w-full h-32 object-cover" alt={s.title || ""} />}
+              <div className="p-4 space-y-1">
+                {s.title && <h3 className="font-display font-bold">{s.title}</h3>}
+                {s.subtitle && <p className="text-xs text-primary">{s.subtitle}</p>}
+                {s.body && <p className="text-sm text-muted-foreground whitespace-pre-line">{s.body}</p>}
+                {s.link_url && (
+                  <a href={s.link_url} className="inline-block mt-2 text-xs font-bold text-primary">{s.link_label || "Learn more"} →</a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {featured.length > 0 && (
