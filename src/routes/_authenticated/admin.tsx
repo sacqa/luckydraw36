@@ -372,7 +372,7 @@ function DepositReviewModal({ d, onClose, onAct, viewScreenshot }: { d: any; onC
         <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Admin note (optional)" rows={2} className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
         <div className="flex gap-2">
           <button onClick={() => onAct(d, false, note)} className="flex-1 bg-rose-500/15 text-rose-400 py-2.5 rounded-xl font-semibold">Reject</button>
-          <button onClick={() => onAct(d, true, note)} className="flex-1 bg-emerald-500 text-emerald-foreground py-2.5 rounded-xl font-semibold">Approve & credit</button>
+          <button onClick={() => onAct(d, true, note)} className="flex-1 bg-emerald-500 text-white py-2.5 rounded-xl font-semibold">Approve & credit</button>
         </div>
       </div>
     </div>
