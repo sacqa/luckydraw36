@@ -73,6 +73,24 @@ function HomePage() {
         </Link>
       )}
 
+      {sections.length > 0 && (
+        <div className="px-5 pt-5 space-y-3">
+          {sections.map(s => (
+            <div key={s.id} className="bg-gradient-card border border-border rounded-2xl overflow-hidden">
+              {s.image_url && <img src={s.image_url} className="w-full h-32 object-cover" alt={s.title || ""} />}
+              <div className="p-4 space-y-1">
+                {s.title && <h3 className="font-display font-bold">{s.title}</h3>}
+                {s.subtitle && <p className="text-xs text-primary">{s.subtitle}</p>}
+                {s.body && <p className="text-sm text-muted-foreground whitespace-pre-line">{s.body}</p>}
+                {s.link_url && (
+                  <a href={s.link_url} className="inline-block mt-2 text-xs font-bold text-primary">{s.link_label || "Learn more"} →</a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {featured.length > 0 && (
         <section className="px-5 pt-6">
           <div className="flex items-center justify-between mb-3">
