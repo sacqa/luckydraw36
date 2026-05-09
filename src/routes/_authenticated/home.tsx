@@ -13,6 +13,7 @@ function HomePage() {
   const [balance, setBalance] = useState(0);
   const [games, setGames] = useState<Game[]>([]);
   const [winners, setWinners] = useState<any[]>([]);
+  const [sections, setSections] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -23,6 +24,8 @@ function HomePage() {
     supabase.from("winners").select("id,prize_value,created_at,games(title,prize_image),profiles:user_id(full_name)")
       .order("created_at", { ascending: false }).limit(5)
       .then(({ data }) => data && setWinners(data));
+    supabase.from("homepage_sections").select("*").eq("is_active", true).order("position")
+      .then(({ data }) => data && setSections(data));
 
     const channel = supabase.channel("home")
       .on("postgres_changes", { event: "*", schema: "public", table: "wallets", filter: `user_id=eq.${user.id}` },
