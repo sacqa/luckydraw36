@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Copy, LogOut, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -11,6 +11,8 @@ function ProfilePage() {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
+  const tapCount = useRef(0);
+  const tapTimer = useRef<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -18,6 +20,20 @@ function ProfilePage() {
   }, [user]);
 
   const link = profile ? `${typeof window !== "undefined" ? window.location.origin : ""}/login?ref=${profile.referral_code}` : "";
+
+  function handleVersionTap() {
+    tapCount.current += 1;
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 2000);
+    if (tapCount.current >= 5) {
+      tapCount.current = 0;
+      if (isAdmin) {
+        navigate({ to: "/admin" });
+      } else {
+        toast.error("Access denied");
+      }
+    }
+  }
 
   return (
     <div className="px-5 pt-5 space-y-5">
@@ -49,22 +65,17 @@ function ProfilePage() {
         </div>
       </div>
 
-      <div className="bg-gradient-card border border-border rounded-3xl p-4 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="font-display font-bold">Admin Panel</h2>
-            <p className="text-xs text-muted-foreground">Open the admin dashboard from your profile.</p>
-          </div>
-          {isAdmin && <span className="text-[10px] uppercase font-bold text-primary bg-primary/15 px-2 py-1 rounded-full">Authorized</span>}
-        </div>
-        <button onClick={() => navigate({ to: "/admin" })} className="w-full glass py-3 rounded-2xl font-semibold">
-          Open Admin Dashboard
-        </button>
-      </div>
-
       <button onClick={async () => { await signOut(); navigate({ to: "/" }); }}
         className="w-full bg-destructive/15 text-destructive py-3 rounded-2xl font-semibold inline-flex items-center justify-center gap-2">
         <LogOut className="h-4 w-4" /> Sign out
+      </button>
+
+      <button
+        onClick={handleVersionTap}
+        className="w-full text-center text-[11px] text-muted-foreground/60 py-4 select-none"
+        aria-label="App version"
+      >
+        App Version 1.0.0
       </button>
     </div>
   );
