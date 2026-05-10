@@ -1017,7 +1017,7 @@ function HomepageTab() {
 }
 
 function HomepageEditor({ s, onClose, onSave }: { s: any; onClose: () => void; onSave: (s: any) => void }) {
-  const [v, setV] = useState<any>(s);
+  const [v, setV] = useDraft<any>(`admin.homepage.${s.id || "new"}`, s);
   return (
     <div className="fixed inset-0 z-50 bg-black/70 grid place-items-center p-4" onClick={onClose}>
       <div className="bg-background border border-border rounded-3xl max-w-lg w-full p-6 space-y-3 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
