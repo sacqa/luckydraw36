@@ -21,7 +21,8 @@ function HomePage() {
       .then(({ data }) => data && setBalance(Number(data.balance)));
     supabase.from("games").select("*").eq("status", "live").order("featured", { ascending: false }).order("ends_at")
       .then(({ data }) => data && setGames(data as any));
-    supabase.from("winners").select("id,prize_value,created_at,games(title,prize_image),profiles:user_id(full_name)")
+    supabase.from("winners").select("id,prize_value,created_at,notify_until,games(title,prize_image),profiles:user_id(full_name)")
+      .or("notify_until.is.null,notify_until.gt." + new Date().toISOString())
       .order("created_at", { ascending: false }).limit(5)
       .then(({ data }) => data && setWinners(data));
     supabase.from("homepage_sections").select("*").eq("is_active", true).order("position")
