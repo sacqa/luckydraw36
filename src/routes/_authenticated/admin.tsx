@@ -394,7 +394,8 @@ function Info({ label, value }: { label: string; value: any }) {
 /* ============ GAMES ============ */
 function GamesTab() {
   const [games, setGames] = useState<any[]>([]);
-  const [f, setF] = useState({ title: "", img: "", value: "", fee: "5", slots: "1000", days: "7", desc: "" });
+  const [f, setF, clearDraft] = useDraft("admin.games.create", { title: "", img: "", value: "", fee: "5", slots: "1000", days: "7", desc: "" });
+  const [shuffleGame, setShuffleGame] = useState<any | null>(null);
 
   async function load() {
     const { data } = await supabase.from("games").select("*").order("created_at", { ascending: false });
@@ -411,19 +412,7 @@ function GamesTab() {
     });
     if (error) return toast.error(error.message);
     toast.success("Game created");
-    setF({ title: "", img: "", value: "", fee: "5", slots: "1000", days: "7", desc: "" });
-    load();
-  }
-
-  async function drawWinner(g: any) {
-    const { data: tickets } = await supabase.from("tickets").select("*").eq("game_id", g.id);
-    if (!tickets || tickets.length === 0) return toast.error("No tickets");
-    const arr = new Uint32Array(1); crypto.getRandomValues(arr);
-    const t = tickets[arr[0] % tickets.length];
-    await supabase.from("winners").insert({ game_id: g.id, user_id: t.user_id, ticket_id: t.id, prize_value: g.prize_value });
-    await supabase.from("games").update({ status: "completed" }).eq("id", g.id);
-    await supabase.from("notifications").insert({ user_id: t.user_id, title: "🎉 You won!", body: `Congrats! You won ${g.title}.` });
-    toast.success(`Winner: ${t.ticket_no}`);
+    clearDraft();
     load();
   }
 
@@ -441,7 +430,11 @@ function GamesTab() {
   return (
     <div className="grid lg:grid-cols-[420px_1fr] gap-4">
       <form onSubmit={create} className="bg-gradient-card border border-border rounded-2xl p-5 space-y-2 h-fit lg:sticky lg:top-6">
-        <h2 className="font-display font-bold flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Create game</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display font-bold flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Create game</h2>
+          <button type="button" onClick={clearDraft} className="text-[10px] text-muted-foreground underline">Clear draft</button>
+        </div>
+        <p className="text-[10px] text-muted-foreground">Auto-saved as you type — safe to switch tabs.</p>
         <input required value={f.title} onChange={e => setF({ ...f, title: e.target.value })} placeholder="Title" className="w-full bg-input/50 border border-border rounded-xl px-4 py-2.5 text-sm" />
         <textarea value={f.desc} onChange={e => setF({ ...f, desc: e.target.value })} placeholder="Description" className="w-full bg-input/50 border border-border rounded-xl px-4 py-2.5 text-sm" rows={2} />
         <input value={f.img} onChange={e => setF({ ...f, img: e.target.value })} placeholder="Prize image URL" className="w-full bg-input/50 border border-border rounded-xl px-4 py-2.5 text-sm" />
@@ -460,12 +453,12 @@ function GamesTab() {
               {g.prize_image && <img src={g.prize_image} className="w-14 h-14 rounded-xl object-cover" alt="" />}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{g.title}</p>
-                <p className="text-[11px] text-muted-foreground">{g.filled_slots}/{g.total_slots} · PKR {g.prize_value} · {g.status}</p>
+                <p className="text-[11px] text-muted-foreground">{g.filled_slots}/{g.total_slots} entries · PKR {g.prize_value} · {g.status}</p>
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
               {g.status !== "completed" && (
-                <button onClick={() => drawWinner(g)} className="text-xs bg-primary/15 text-primary px-3 py-1.5 rounded-full font-semibold inline-flex items-center gap-1"><Trophy className="h-3 w-3" /> Draw</button>
+                <button onClick={() => setShuffleGame(g)} className="text-xs bg-primary/15 text-primary px-3 py-1.5 rounded-full font-semibold inline-flex items-center gap-1"><Shuffle className="h-3 w-3" /> Shuffle & Draw</button>
               )}
               {g.status === "live" ? (
                 <button onClick={() => toggleStatus(g, "cancelled")} className="text-xs bg-yellow-500/15 text-yellow-400 px-3 py-1.5 rounded-full font-semibold">Cancel</button>
@@ -477,6 +470,203 @@ function GamesTab() {
           </div>
         ))}
       </div>
+      {shuffleGame && <ShuffleWinnerModal game={shuffleGame} onClose={() => setShuffleGame(null)} onDone={() => { setShuffleGame(null); load(); }} />}
+    </div>
+  );
+}
+
+/* ============ SHUFFLE WINNER MODAL ============ */
+function ShuffleWinnerModal({ game, onClose, onDone }: { game: any; onClose: () => void; onDone: () => void }) {
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [profilesById, setProfilesById] = useState<Map<string, any>>(new Map());
+  const [shuffling, setShuffling] = useState(false);
+  const [highlight, setHighlight] = useState<string | null>(null);
+  const [winner, setWinner] = useState<any | null>(null);
+  const [expiryHours, setExpiryHours] = useState("72");
+  const [committing, setCommitting] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: ts } = await supabase.from("tickets").select("*").eq("game_id", game.id);
+      setTickets(ts || []);
+      const ids = Array.from(new Set((ts || []).map((t: any) => t.user_id)));
+      if (ids.length) {
+        const { data: ps } = await supabase.from("profiles").select("id,full_name,email,phone").in("id", ids);
+        setProfilesById(new Map((ps || []).map((p: any) => [p.id, p])));
+      }
+    })();
+  }, [game.id]);
+
+  function shuffle() {
+    if (tickets.length === 0) { toast.error("No entries to draw from"); return; }
+    setWinner(null);
+    setShuffling(true);
+    let count = 0;
+    const total = 30;
+    const interval = setInterval(() => {
+      const arr = new Uint32Array(1); crypto.getRandomValues(arr);
+      const t = tickets[arr[0] % tickets.length];
+      setHighlight(t.id);
+      count++;
+      if (count >= total) {
+        clearInterval(interval);
+        const finalArr = new Uint32Array(1); crypto.getRandomValues(finalArr);
+        const w = tickets[finalArr[0] % tickets.length];
+        setHighlight(w.id);
+        setWinner(w);
+        setShuffling(false);
+      }
+    }, 80);
+  }
+
+  async function commitWinner() {
+    if (!winner) return;
+    setCommitting(true);
+    try {
+      const hrs = Number(expiryHours);
+      const notify_until = hrs > 0 ? new Date(Date.now() + hrs * 3600000).toISOString() : null;
+      const { error } = await supabase.from("winners").insert({
+        game_id: game.id, user_id: winner.user_id, ticket_id: winner.id,
+        prize_value: game.prize_value, notify_until,
+      });
+      if (error) throw error;
+      await supabase.from("games").update({ status: "completed" }).eq("id", game.id);
+      await supabase.from("notifications").insert({
+        user_id: winner.user_id, title: "🎉 You won!",
+        body: `Congrats! You won ${game.title}. Prize: PKR ${game.prize_value}.`,
+      });
+      toast.success(`Winner confirmed: ${winner.ticket_no}`);
+      onDone();
+    } catch (e: any) {
+      toast.error(e.message || "Could not save winner");
+    } finally {
+      setCommitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 grid place-items-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-3xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="font-display font-bold text-xl">Shuffle & draw winner</h3>
+            <p className="text-xs text-muted-foreground">{game.title} · {tickets.length} valid entries</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground"><XCircle className="h-5 w-5" /></button>
+        </div>
+
+        <div className="bg-secondary/40 rounded-2xl p-3 max-h-64 overflow-y-auto space-y-1">
+          {tickets.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No entries yet.</p>
+          ) : tickets.map(t => {
+            const p = profilesById.get(t.user_id);
+            const isHi = highlight === t.id;
+            return (
+              <div key={t.id} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs transition ${isHi ? "bg-gradient-primary text-primary-foreground shadow-glow scale-[1.02]" : "bg-background/40"}`}>
+                <span className="font-mono">{t.ticket_no}</span>
+                <span className="truncate ml-2">{p?.full_name || p?.email || t.user_id.slice(0, 8)}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {winner && (
+          <div className="bg-gradient-primary text-primary-foreground rounded-2xl p-4 shadow-glow">
+            <p className="text-xs opacity-80">🏆 Winner</p>
+            <p className="font-display font-bold text-lg">{profilesById.get(winner.user_id)?.full_name || "—"}</p>
+            <p className="text-xs font-mono opacity-90">{winner.ticket_no}</p>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Notification expires in (hours)</label>
+          <input type="number" value={expiryHours} onChange={e => setExpiryHours(e.target.value)}
+            className="w-24 bg-input/50 border border-border rounded-xl px-3 py-1.5 text-sm" />
+          <span className="text-[10px] text-muted-foreground">0 = never</span>
+        </div>
+
+        <div className="flex gap-2">
+          <button onClick={shuffle} disabled={shuffling || tickets.length === 0}
+            className="flex-1 bg-secondary py-2.5 rounded-xl font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1">
+            <Shuffle className="h-4 w-4" /> {shuffling ? "Shuffling…" : winner ? "Re-shuffle" : "Shuffle"}
+          </button>
+          <button onClick={commitWinner} disabled={!winner || committing}
+            className="flex-1 bg-gradient-primary text-primary-foreground py-2.5 rounded-xl font-semibold disabled:opacity-50">
+            {committing ? "Saving…" : "Confirm winner"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ WINNERS HISTORY ============ */
+function WinnersTab() {
+  const [list, setList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    setLoading(true);
+    const { data } = await supabase.from("winners")
+      .select("id,prize_value,created_at,notify_until,games(title,prize_image),profiles:user_id(full_name,email,phone)")
+      .order("created_at", { ascending: false }).limit(200);
+    setList(data || []);
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function clearExpiry(id: string) {
+    await supabase.from("winners").update({ notify_until: new Date().toISOString() }).eq("id", id);
+    toast.success("Notification hidden");
+    load();
+  }
+  async function extend(id: string, hours: number) {
+    await supabase.from("winners").update({ notify_until: new Date(Date.now() + hours * 3600000).toISOString() }).eq("id", id);
+    load();
+  }
+  async function del(id: string) {
+    if (!confirm("Delete this winner record?")) return;
+    await supabase.from("winners").delete().eq("id", id);
+    load();
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-gradient-card border border-border rounded-2xl p-4 flex items-center justify-between">
+        <h2 className="font-display font-bold flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /> Winner history</h2>
+        <span className="text-[11px] text-muted-foreground">{list.length} records</span>
+      </div>
+      {loading ? <p className="text-sm text-muted-foreground p-4">Loading…</p>
+        : list.length === 0 ? <div className="bg-gradient-card border border-border rounded-2xl p-6 text-sm text-muted-foreground text-center">No winners yet.</div>
+        : (
+          <div className="grid lg:grid-cols-2 gap-3">
+            {list.map(w => {
+              const expired = w.notify_until && new Date(w.notify_until) < new Date();
+              return (
+                <div key={w.id} className="bg-gradient-card border border-border rounded-2xl p-4 space-y-2">
+                  <div className="flex items-center gap-3">
+                    {w.games?.prize_image && <img src={w.games.prize_image} className="w-12 h-12 rounded-xl object-cover" alt="" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold truncate">{w.profiles?.full_name || "—"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{w.games?.title} · PKR {Number(w.prize_value).toLocaleString()}</p>
+                      <p className="text-[10px] text-muted-foreground">{new Date(w.created_at).toLocaleString()}</p>
+                    </div>
+                    <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded ${expired ? "bg-muted text-muted-foreground" : "bg-emerald-500/15 text-emerald-400"}`}>
+                      {expired ? "expired" : w.notify_until ? "live" : "permanent"}
+                    </span>
+                  </div>
+                  {w.notify_until && <p className="text-[10px] text-muted-foreground">Notify until: {new Date(w.notify_until).toLocaleString()}</p>}
+                  <div className="flex gap-2 flex-wrap">
+                    <button onClick={() => extend(w.id, 24)} className="text-xs bg-secondary px-3 py-1.5 rounded-lg font-semibold">+24h</button>
+                    <button onClick={() => extend(w.id, 168)} className="text-xs bg-secondary px-3 py-1.5 rounded-lg font-semibold">+7d</button>
+                    <button onClick={() => clearExpiry(w.id)} className="text-xs bg-secondary px-3 py-1.5 rounded-lg font-semibold">Hide now</button>
+                    <button onClick={() => del(w.id)} className="text-xs bg-destructive/15 text-destructive px-3 py-1.5 rounded-lg font-semibold"><Trash2 className="h-3 w-3" /></button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
     </div>
   );
 }
