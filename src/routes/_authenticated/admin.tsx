@@ -913,7 +913,7 @@ function BannersTab() {
     e.preventDefault();
     const { error } = await supabase.from("banners").insert(f);
     if (error) return toast.error(error.message);
-    setF({ title: "", image_url: "", link: "" });
+    clearBannerDraft();
     load();
   }
   async function del(id: string) { await supabase.from("banners").delete().eq("id", id); load(); }
