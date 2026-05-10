@@ -781,7 +781,7 @@ function UsersTab() {
 /* ============ METHODS ============ */
 function MethodsTab() {
   const [methods, setMethods] = useState<any[]>([]);
-  const [f, setF] = useState({ method_name: "", account_title: "", account_number: "", instructions: "", method_type: "manual", api_endpoint: "", api_key: "", api_config: "" });
+  const [f, setF, clearMethodDraft] = useDraft("admin.methods.create", { method_name: "", account_title: "", account_number: "", instructions: "", method_type: "manual", api_endpoint: "", api_key: "", api_config: "" });
   const [qrFile, setQrFile] = useState<File | null>(null);
 
   async function load() {
