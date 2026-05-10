@@ -1046,7 +1046,7 @@ function HomepageEditor({ s, onClose, onSave }: { s: any; onClose: () => void; o
 
 /* ============ BROADCAST ============ */
 function BroadcastTab() {
-  const [f, setF] = useState({ title: "", body: "" });
+  const [f, setF, clearBroadcastDraft] = useDraft("admin.broadcast", { title: "", body: "" });
   const [sending, setSending] = useState(false);
   async function send(e: React.FormEvent) {
     e.preventDefault();
