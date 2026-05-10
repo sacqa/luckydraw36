@@ -817,7 +817,7 @@ function MethodsTab() {
     if (qr_image) payload.qr_image = qr_image;
     const { error } = await supabase.from("deposit_methods").insert(payload);
     if (error) return toast.error(error.message);
-    setF({ method_name: "", account_title: "", account_number: "", instructions: "", method_type: "manual", api_endpoint: "", api_key: "", api_config: "" });
+    clearMethodDraft();
     setQrFile(null);
     toast.success("Payment method added");
     load();
