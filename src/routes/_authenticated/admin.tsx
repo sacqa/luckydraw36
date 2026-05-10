@@ -903,7 +903,7 @@ function MethodsTab() {
 /* ============ BANNERS ============ */
 function BannersTab() {
   const [banners, setBanners] = useState<any[]>([]);
-  const [f, setF] = useState({ title: "", image_url: "", link: "" });
+  const [f, setF, clearBannerDraft] = useDraft("admin.banners.create", { title: "", image_url: "", link: "" });
   async function load() {
     const { data } = await supabase.from("banners").select("*").order("created_at", { ascending: false });
     setBanners(data || []);
