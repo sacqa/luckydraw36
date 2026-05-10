@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone,
   Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck, Activity,
