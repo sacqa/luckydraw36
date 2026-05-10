@@ -1,19 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone,
   Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck, Activity,
-  Layout as LayoutIcon, QrCode, Globe, Eye, Mail, Phone, User as UserIcon, ChevronRight,
+  Layout as LayoutIcon, QrCode, Globe, Eye, Mail, Phone, User as UserIcon, ChevronRight, Shuffle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useDraft } from "@/hooks/use-draft";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "stats" | "activity" | "deposits" | "games" | "users" | "methods" | "banners" | "homepage" | "broadcast";
+type Tab = "stats" | "activity" | "deposits" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "broadcast";
 
 const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "stats", label: "Overview", Icon: BarChart3 },
@@ -21,6 +22,7 @@ const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "deposits", label: "Deposits", Icon: CreditCard },
   { id: "users", label: "Users", Icon: Users },
   { id: "games", label: "Games", Icon: Sparkles },
+  { id: "winners", label: "Winners", Icon: Trophy },
   { id: "methods", label: "Payment Methods", Icon: QrCode },
   { id: "banners", label: "Banners", Icon: ImageIcon },
   { id: "homepage", label: "Homepage", Icon: LayoutIcon },
