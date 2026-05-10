@@ -9,7 +9,7 @@ import { GameCard, type Game } from "@/components/GameCard";
 export const Route = createFileRoute("/_authenticated/home")({ component: HomePage });
 
 function HomePage() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [games, setGames] = useState<Game[]>([]);
   const [winners, setWinners] = useState<any[]>([]);
