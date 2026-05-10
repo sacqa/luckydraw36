@@ -106,6 +106,7 @@ function AdminPage() {
             {tab === "activity" && <ActivityTab />}
             {tab === "deposits" && <DepositsTab adminId={user?.id} />}
             {tab === "games" && <GamesTab />}
+            {tab === "winners" && <WinnersTab />}
             {tab === "users" && <UsersTab />}
             {tab === "methods" && <MethodsTab />}
             {tab === "banners" && <BannersTab />}
