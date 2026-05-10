@@ -505,6 +505,7 @@ export type Database = {
           created_at: string
           game_id: string
           id: string
+          notify_until: string | null
           prize_value: number | null
           ticket_id: string | null
           user_id: string
@@ -513,6 +514,7 @@ export type Database = {
           created_at?: string
           game_id: string
           id?: string
+          notify_until?: string | null
           prize_value?: number | null
           ticket_id?: string | null
           user_id: string
@@ -521,6 +523,7 @@ export type Database = {
           created_at?: string
           game_id?: string
           id?: string
+          notify_until?: string | null
           prize_value?: number | null
           ticket_id?: string | null
           user_id?: string
@@ -554,7 +557,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      purchase_ticket: {
+        Args: { p_game_id: string; p_qty: number }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user"

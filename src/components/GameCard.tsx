@@ -59,8 +59,7 @@ export function GameCard({ game }: { game: Game }) {
               <div className="h-full bg-gradient-primary" style={{ width: `${pct}%` }} />
             </div>
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {game.filled_slots.toLocaleString()} joined</span>
-              <span>{game.total_slots - game.filled_slots} left</span>
+              <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {game.filled_slots.toLocaleString()} entries</span>
             </div>
           </div>
           <div className="flex items-center justify-between pt-1">

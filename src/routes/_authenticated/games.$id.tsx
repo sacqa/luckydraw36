@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Users, Clock, Ticket } from "lucide-react";
+import { ArrowLeft, Users, Clock, Ticket, Minus, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,8 @@ function GameDetails() {
   const [game, setGame] = useState<any>(null);
   const [joining, setJoining] = useState(false);
   const [myTickets, setMyTickets] = useState<any[]>([]);
+  const [balance, setBalance] = useState(0);
+  const [qty, setQty] = useState(1);
 
   async function load() {
     const { data } = await supabase.from("games").select("*").eq("id", id).maybeSingle();
@@ -22,24 +24,33 @@ function GameDetails() {
     if (user) {
       const { data: t } = await supabase.from("tickets").select("*").eq("game_id", id).eq("user_id", user.id);
       setMyTickets(t || []);
+      const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
+      if (w) setBalance(Number(w.balance));
     }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id, user?.id]);
 
+  const maxAllowed = Math.max(0, 3 - myTickets.length);
+
   async function join() {
     if (!user || !game) return;
+    if (qty < 1 || qty > maxAllowed) {
+      toast.error(maxAllowed === 0 ? "You already have 3 tickets for this game" : `You can buy up to ${maxAllowed} more`);
+      return;
+    }
     setJoining(true);
     try {
-      const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
-      if (!w || Number(w.balance) < Number(game.entry_fee)) {
-        toast.error("Insufficient balance. Please deposit first.");
+      const total = Number(game.entry_fee) * qty;
+      if (balance < total) {
+        toast.error(`Insufficient balance. Need PKR ${total}, have PKR ${balance}`);
         return;
       }
-      // Insert ticket (RLS allows self insert). Wallet debit happens via admin/edge in production.
-      const { error } = await supabase.from("tickets").insert({ game_id: id, user_id: user.id });
+      const { data, error } = await supabase.rpc("purchase_ticket", { p_game_id: id, p_qty: qty });
       if (error) throw error;
+      const charged = Number((data as any)?.charged ?? total);
       confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
-      toast.success("You're in! Ticket added.");
+      toast.success(`${qty} ticket(s) purchased · PKR ${charged} deducted`);
+      setQty(1);
       load();
     } catch (e: any) {
       toast.error(e.message || "Could not join");
@@ -47,7 +58,7 @@ function GameDetails() {
   }
 
   if (!game) return <div className="p-6 text-center text-muted-foreground">Loading…</div>;
-  const pct = Math.min(100, (game.filled_slots / game.total_slots) * 100);
+  const total = Number(game.entry_fee) * qty;
 
   return (
     <div>
@@ -75,24 +86,19 @@ function GameDetails() {
               <p className="font-bold">{game.winner_count}</p>
             </div>
             <div className="bg-secondary rounded-xl py-2.5">
-              <p className="text-[10px] text-muted-foreground">Slots</p>
-              <p className="font-bold">{game.total_slots}</p>
+              <p className="text-[10px] text-muted-foreground">Entries</p>
+              <p className="font-bold">{game.filled_slots}</p>
             </div>
           </div>
-          <div className="space-y-1">
-            <div className="h-2 rounded-full bg-secondary overflow-hidden">
-              <div className="h-full bg-gradient-primary" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {game.filled_slots} joined</span>
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> ends {new Date(game.ends_at).toLocaleDateString()}</span>
-            </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {game.filled_slots} entries so far</span>
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> ends {new Date(game.ends_at).toLocaleDateString()}</span>
           </div>
         </motion.div>
 
         {myTickets.length > 0 && (
           <div className="bg-gradient-card border border-border rounded-3xl p-4">
-            <p className="text-xs text-muted-foreground mb-2">Your tickets</p>
+            <p className="text-xs text-muted-foreground mb-2">Your tickets ({myTickets.length}/3)</p>
             <div className="flex flex-wrap gap-2">
               {myTickets.map(t => (
                 <span key={t.id} className="text-xs font-mono bg-primary/15 text-primary px-2.5 py-1 rounded-full flex items-center gap-1">
@@ -103,9 +109,34 @@ function GameDetails() {
           </div>
         )}
 
-        <button onClick={join} disabled={joining}
+        <div className="bg-gradient-card border border-border rounded-3xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Wallet balance</span>
+            <span className="text-sm font-bold text-primary">PKR {balance.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Tickets to buy (max 3 per game)</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setQty(Math.max(1, qty - 1))} disabled={qty <= 1 || maxAllowed === 0}
+                className="w-8 h-8 rounded-full bg-secondary grid place-items-center disabled:opacity-40">
+                <Minus className="h-3 w-3" />
+              </button>
+              <span className="font-bold w-6 text-center">{qty}</span>
+              <button onClick={() => setQty(Math.min(maxAllowed, qty + 1))} disabled={qty >= maxAllowed}
+                className="w-8 h-8 rounded-full bg-secondary grid place-items-center disabled:opacity-40">
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between border-t border-border pt-3">
+            <span className="text-xs text-muted-foreground">Total to deduct</span>
+            <span className="text-base font-bold">PKR {total.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <button onClick={join} disabled={joining || maxAllowed === 0}
           className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow disabled:opacity-60">
-          {joining ? "Joining…" : `Join for PKR ${game.entry_fee}`}
+          {maxAllowed === 0 ? "Maximum 3 tickets reached" : joining ? "Processing…" : `Buy ${qty} ticket(s) · PKR ${total.toLocaleString()}`}
         </button>
       </div>
     </div>

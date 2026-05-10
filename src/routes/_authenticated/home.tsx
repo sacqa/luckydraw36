@@ -9,7 +9,7 @@ import { GameCard, type Game } from "@/components/GameCard";
 export const Route = createFileRoute("/_authenticated/home")({ component: HomePage });
 
 function HomePage() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [games, setGames] = useState<Game[]>([]);
   const [winners, setWinners] = useState<any[]>([]);
@@ -21,7 +21,8 @@ function HomePage() {
       .then(({ data }) => data && setBalance(Number(data.balance)));
     supabase.from("games").select("*").eq("status", "live").order("featured", { ascending: false }).order("ends_at")
       .then(({ data }) => data && setGames(data as any));
-    supabase.from("winners").select("id,prize_value,created_at,games(title,prize_image),profiles:user_id(full_name)")
+    supabase.from("winners").select("id,prize_value,created_at,notify_until,games(title,prize_image),profiles:user_id(full_name)")
+      .or("notify_until.is.null,notify_until.gt." + new Date().toISOString())
       .order("created_at", { ascending: false }).limit(5)
       .then(({ data }) => data && setWinners(data));
     supabase.from("homepage_sections").select("*").eq("is_active", true).order("position")
@@ -67,11 +68,6 @@ function HomePage() {
         </div>
       </motion.div>
 
-      {isAdmin && (
-        <Link to="/admin" className="mx-5 mt-4 block bg-gradient-card border border-primary/30 rounded-2xl p-3 text-center text-sm font-semibold">
-          Open Admin Dashboard →
-        </Link>
-      )}
 
       {sections.length > 0 && (
         <div className="px-5 pt-5 space-y-3">
