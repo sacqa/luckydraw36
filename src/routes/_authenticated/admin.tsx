@@ -1065,7 +1065,7 @@ function BroadcastTab() {
     setSending(false);
     if (error) return toast.error(error.message);
     toast.success(`Sent to ${users.length} users`);
-    setF({ title: "", body: "" });
+    clearBroadcastDraft();
   }
   return (
     <form onSubmit={send} className="bg-gradient-card border border-border rounded-2xl p-5 space-y-2 max-w-xl">
