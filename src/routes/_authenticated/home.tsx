@@ -67,11 +67,6 @@ function HomePage() {
         </div>
       </motion.div>
 
-      {isAdmin && (
-        <Link to="/admin" className="mx-5 mt-4 block bg-gradient-card border border-primary/30 rounded-2xl p-3 text-center text-sm font-semibold">
-          Open Admin Dashboard →
-        </Link>
-      )}
 
       {sections.length > 0 && (
         <div className="px-5 pt-5 space-y-3">
