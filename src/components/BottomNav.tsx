@@ -1,12 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Wallet, Trophy, Gift, User, Shield } from "lucide-react";
+import { Home, Wallet, Trophy, Crown, User, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 const baseItems = [
   { to: "/home", label: "Home", Icon: Home },
   { to: "/wallet", label: "Wallet", Icon: Wallet },
   { to: "/winners", label: "Winners", Icon: Trophy },
-  { to: "/deposit", label: "Deposit", Icon: Gift },
+  { to: "/leaderboard", label: "Ranks", Icon: Crown },
   { to: "/profile", label: "Profile", Icon: User },
 ] as const;
 
