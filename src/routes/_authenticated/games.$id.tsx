@@ -145,11 +145,28 @@ function GameDetails() {
           </div>
         </div>
 
-        <button onClick={join} disabled={joining || maxAllowed === 0}
-          className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow disabled:opacity-60">
-          {maxAllowed === 0 ? "Maximum 3 tickets reached" : joining ? "Processing…" : `Buy ${qty} ticket(s) · PKR ${total.toLocaleString()}`}
-        </button>
+        {winner ? (
+          <button onClick={() => setShowReel(true)}
+            className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow flex items-center justify-center gap-2">
+            <Trophy className="h-5 w-5" /> Watch live draw replay
+          </button>
+        ) : (
+          <button onClick={join} disabled={joining || maxAllowed === 0}
+            className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow disabled:opacity-60">
+            {maxAllowed === 0 ? "Maximum 3 tickets reached" : joining ? "Processing…" : `Buy ${qty} ticket(s) · PKR ${total.toLocaleString()}`}
+          </button>
+        )}
       </div>
+
+      {winner && (
+        <LiveDrawReel
+          open={showReel}
+          onClose={() => setShowReel(false)}
+          winnerTicket={winner.tickets?.ticket_no || "LD-WINNER"}
+          winnerName={winner.profiles?.full_name || "Lucky winner"}
+          prize={game.title}
+        />
+      )}
     </div>
   );
 }
