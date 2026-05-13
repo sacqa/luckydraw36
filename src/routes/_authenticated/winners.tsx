@@ -27,7 +27,12 @@ function WinnersPage() {
               <p className="text-xs text-muted-foreground truncate">won {w.games?.title}</p>
               <p className="text-[11px] text-muted-foreground">{new Date(w.created_at).toLocaleString()}</p>
             </div>
-            <span className="text-sm font-bold text-primary">PKR {Number(w.prize_value || w.games?.prize_value || 0).toLocaleString()}</span>
+            <div className="text-right space-y-1">
+              <span className="text-sm font-bold text-primary block">PKR {Number(w.prize_value || w.games?.prize_value || 0).toLocaleString()}</span>
+              <Link to="/verify/$id" params={{ id: w.id }} className="inline-flex items-center gap-1 text-[10px] text-success font-semibold">
+                <ShieldCheck className="h-3 w-3" /> Verify
+              </Link>
+            </div>
           </div>
         ))}
       </div>
