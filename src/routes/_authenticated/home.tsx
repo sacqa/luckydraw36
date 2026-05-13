@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { GameCard, type Game } from "@/components/GameCard";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { JackpotTicker } from "@/components/JackpotTicker";
+import { DailySpinCard } from "@/components/DailySpinCard";
 
 export const Route = createFileRoute("/_authenticated/home")({ component: HomePage });
 
