@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Users, Clock, Ticket, Minus, Plus } from "lucide-react";
+import { ArrowLeft, Users, Clock, Ticket, Minus, Plus, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { LiveDrawReel } from "@/components/LiveDrawReel";
 
 export const Route = createFileRoute("/_authenticated/games/$id")({ component: GameDetails });
 
