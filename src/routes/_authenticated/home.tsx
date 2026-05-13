@@ -42,6 +42,18 @@ function HomePage() {
   const featured = games.filter(g => g.featured);
   const others = games.filter(g => !g.featured);
 
+  const tickerItems = useMemo(() => {
+    const live = games.slice(0, 6).map(g => ({
+      label: g.title,
+      value: `PKR ${Number(g.prize_value).toLocaleString()}`,
+    }));
+    const wins = winners.slice(0, 4).map(w => ({
+      label: w.profiles?.full_name?.split(" ")[0] || "Winner",
+      value: `won PKR ${Number(w.prize_value || 0).toLocaleString()}`,
+    }));
+    return [...live, ...wins];
+  }, [games, winners]);
+
   return (
     <div className="min-h-screen">
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
