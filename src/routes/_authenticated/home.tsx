@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { GameCard, type Game } from "@/components/GameCard";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { JackpotTicker } from "@/components/JackpotTicker";
+import { DailySpinCard } from "@/components/DailySpinCard";
 
 export const Route = createFileRoute("/_authenticated/home")({ component: HomePage });
 
@@ -87,6 +88,10 @@ function HomePage() {
           <JackpotTicker items={tickerItems} />
         </div>
       )}
+
+      <div className="px-5 pt-4">
+        <DailySpinCard />
+      </div>
 
       <div className="px-5 pt-4">
         <LiveActivityFeed />

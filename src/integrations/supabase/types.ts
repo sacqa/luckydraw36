@@ -410,6 +410,36 @@ export type Database = {
           },
         ]
       }
+      user_progress: {
+        Row: {
+          best_streak: number
+          last_claim_at: string | null
+          streak: number
+          total_claimed: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          best_streak?: number
+          last_claim_at?: string | null
+          streak?: number
+          total_claimed?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          best_streak?: number
+          last_claim_at?: string | null
+          streak?: number
+          total_claimed?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -557,6 +587,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_daily_spin: { Args: never; Returns: Json }
       purchase_ticket: {
         Args: { p_game_id: string; p_qty: number }
         Returns: Json
