@@ -82,6 +82,15 @@ function HomePage() {
         </div>
       </motion.div>
 
+      {tickerItems.length > 0 && (
+        <div className="px-5 pt-4">
+          <JackpotTicker items={tickerItems} />
+        </div>
+      )}
+
+      <div className="px-5 pt-4">
+        <LiveActivityFeed />
+      </div>
 
       {sections.length > 0 && (
         <div className="px-5 pt-5 space-y-3">
