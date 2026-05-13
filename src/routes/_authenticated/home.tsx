@@ -90,6 +90,10 @@ function HomePage() {
       )}
 
       <div className="px-5 pt-4">
+        <DailySpinCard />
+      </div>
+
+      <div className="px-5 pt-4">
         <LiveActivityFeed />
       </div>
 
