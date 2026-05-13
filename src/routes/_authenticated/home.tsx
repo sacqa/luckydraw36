@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Bell, Sparkles, TrendingUp, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { GameCard, type Game } from "@/components/GameCard";
+import { LiveActivityFeed } from "@/components/LiveActivityFeed";
+import { JackpotTicker } from "@/components/JackpotTicker";
 
 export const Route = createFileRoute("/_authenticated/home")({ component: HomePage });
 
@@ -40,6 +42,18 @@ function HomePage() {
   const featured = games.filter(g => g.featured);
   const others = games.filter(g => !g.featured);
 
+  const tickerItems = useMemo(() => {
+    const live = games.slice(0, 6).map(g => ({
+      label: g.title,
+      value: `PKR ${Number(g.prize_value).toLocaleString()}`,
+    }));
+    const wins = winners.slice(0, 4).map(w => ({
+      label: w.profiles?.full_name?.split(" ")[0] || "Winner",
+      value: `won PKR ${Number(w.prize_value || 0).toLocaleString()}`,
+    }));
+    return [...live, ...wins];
+  }, [games, winners]);
+
   return (
     <div className="min-h-screen">
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
@@ -68,6 +82,15 @@ function HomePage() {
         </div>
       </motion.div>
 
+      {tickerItems.length > 0 && (
+        <div className="px-5 pt-4">
+          <JackpotTicker items={tickerItems} />
+        </div>
+      )}
+
+      <div className="px-5 pt-4">
+        <LiveActivityFeed />
+      </div>
 
       {sections.length > 0 && (
         <div className="px-5 pt-5 space-y-3">

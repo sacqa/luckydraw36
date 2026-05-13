@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Users, Clock, Ticket, Minus, Plus } from "lucide-react";
+import { ArrowLeft, Users, Clock, Ticket, Minus, Plus, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { LiveDrawReel } from "@/components/LiveDrawReel";
 
 export const Route = createFileRoute("/_authenticated/games/$id")({ component: GameDetails });
 
@@ -17,10 +18,20 @@ function GameDetails() {
   const [myTickets, setMyTickets] = useState<any[]>([]);
   const [balance, setBalance] = useState(0);
   const [qty, setQty] = useState(1);
+  const [winner, setWinner] = useState<any>(null);
+  const [showReel, setShowReel] = useState(false);
 
   async function load() {
     const { data } = await supabase.from("games").select("*").eq("id", id).maybeSingle();
     setGame(data);
+    const { data: w } = await supabase
+      .from("winners")
+      .select("id,prize_value,ticket_id,created_at,profiles:user_id(full_name),tickets:ticket_id(ticket_no)")
+      .eq("game_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setWinner(w);
     if (user) {
       const { data: t } = await supabase.from("tickets").select("*").eq("game_id", id).eq("user_id", user.id);
       setMyTickets(t || []);
@@ -134,11 +145,28 @@ function GameDetails() {
           </div>
         </div>
 
-        <button onClick={join} disabled={joining || maxAllowed === 0}
-          className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow disabled:opacity-60">
-          {maxAllowed === 0 ? "Maximum 3 tickets reached" : joining ? "Processing…" : `Buy ${qty} ticket(s) · PKR ${total.toLocaleString()}`}
-        </button>
+        {winner ? (
+          <button onClick={() => setShowReel(true)}
+            className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow flex items-center justify-center gap-2">
+            <Trophy className="h-5 w-5" /> Watch live draw replay
+          </button>
+        ) : (
+          <button onClick={join} disabled={joining || maxAllowed === 0}
+            className="w-full bg-gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow disabled:opacity-60">
+            {maxAllowed === 0 ? "Maximum 3 tickets reached" : joining ? "Processing…" : `Buy ${qty} ticket(s) · PKR ${total.toLocaleString()}`}
+          </button>
+        )}
       </div>
+
+      {winner && (
+        <LiveDrawReel
+          open={showReel}
+          onClose={() => setShowReel(false)}
+          winnerTicket={winner.tickets?.ticket_no || "LD-WINNER"}
+          winnerName={winner.profiles?.full_name || "Lucky winner"}
+          prize={game.title}
+        />
+      )}
     </div>
   );
 }
