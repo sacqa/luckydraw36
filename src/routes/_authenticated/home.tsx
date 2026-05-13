@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Bell, Sparkles, TrendingUp, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { GameCard, type Game } from "@/components/GameCard";
+import { LiveActivityFeed } from "@/components/LiveActivityFeed";
+import { JackpotTicker } from "@/components/JackpotTicker";
 
 export const Route = createFileRoute("/_authenticated/home")({ component: HomePage });
 
