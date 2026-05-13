@@ -18,10 +18,20 @@ function GameDetails() {
   const [myTickets, setMyTickets] = useState<any[]>([]);
   const [balance, setBalance] = useState(0);
   const [qty, setQty] = useState(1);
+  const [winner, setWinner] = useState<any>(null);
+  const [showReel, setShowReel] = useState(false);
 
   async function load() {
     const { data } = await supabase.from("games").select("*").eq("id", id).maybeSingle();
     setGame(data);
+    const { data: w } = await supabase
+      .from("winners")
+      .select("id,prize_value,ticket_id,created_at,profiles:user_id(full_name),tickets:ticket_id(ticket_no)")
+      .eq("game_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setWinner(w);
     if (user) {
       const { data: t } = await supabase.from("tickets").select("*").eq("game_id", id).eq("user_id", user.id);
       setMyTickets(t || []);
