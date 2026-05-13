@@ -59,7 +59,7 @@ export function LiveActivityFeed() {
         const { data: prof } = await supabase.from("profiles").select("full_name").eq("id", w.user_id).maybeSingle();
         const name = prof?.full_name?.split(" ")[0] || "A player";
         setItems((cur) => [
-          { id: w.id, icon: "win", text: `${name} just won PKR ${Number(w.prize_value || 0).toLocaleString()}`, accent: true },
+          { id: w.id, icon: "win" as const, text: `${name} just won PKR ${Number(w.prize_value || 0).toLocaleString()}`, accent: true },
           ...cur,
         ].slice(0, 6));
       })
