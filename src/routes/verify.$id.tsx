@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShieldCheck, Trophy, Hash, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Trophy, Hash, ArrowLeft, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/verify/$id")({
