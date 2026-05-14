@@ -1079,3 +1079,102 @@ function BroadcastTab() {
     </form>
   );
 }
+
+function WithdrawalsTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+
+  async function load() {
+    let q = supabase.from("withdrawal_requests").select("*").order("created_at", { ascending: false }).limit(100);
+    if (filter !== "all") q = q.eq("status", filter);
+    const { data } = await q;
+    setItems(data || []);
+    const ids = Array.from(new Set((data || []).map((d: any) => d.user_id)));
+    if (ids.length) {
+      const { data: ps } = await supabase.from("profiles").select("id,full_name,email,phone").in("id", ids);
+      const map: Record<string, any> = {};
+      (ps || []).forEach((p: any) => { map[p.id] = p; });
+      setProfiles(map);
+    }
+  }
+  useEffect(() => { load(); }, [filter]);
+
+  async function process(id: string, approve: boolean) {
+    const note = approve ? null : prompt("Reason for rejection (optional):");
+    setBusy(id);
+    const { error } = await supabase.rpc("process_withdrawal", { p_id: id, p_approve: approve, p_notes: note });
+    setBusy(null);
+    if (error) return toast.error(error.message);
+    toast.success(approve ? "Withdrawal approved" : "Withdrawal rejected & refunded");
+    load();
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        {(["pending","approved","rejected","all"] as const).map(s => (
+          <button key={s} onClick={() => setFilter(s)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${filter === s ? "bg-gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {items.length === 0 && <p className="text-sm text-muted-foreground">No withdrawals.</p>}
+
+      <div className="space-y-3">
+        {items.map(w => {
+          const p = profiles[w.user_id];
+          return (
+            <div key={w.id} className="bg-gradient-card border border-border rounded-2xl p-4 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-display font-bold text-lg">PKR {Number(w.amount).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{w.payment_method}</p>
+                </div>
+                <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${
+                  w.status === "approved" ? "bg-success/15 text-success" :
+                  w.status === "rejected" ? "bg-destructive/15 text-destructive" :
+                  "bg-warning/15 text-warning"}`}>
+                  {w.status}
+                </span>
+              </div>
+
+              <div className="bg-secondary/40 rounded-xl p-3 text-xs space-y-1">
+                <p><span className="text-muted-foreground">Send to:</span> <span className="font-semibold">{w.account_title}</span></p>
+                <p className="font-mono">{w.account_number}</p>
+              </div>
+
+              {p && (
+                <div className="bg-secondary/40 rounded-xl p-3 text-xs space-y-0.5">
+                  <p className="flex items-center gap-1"><UserIcon className="h-3 w-3 text-muted-foreground" /> {p.full_name || "—"}</p>
+                  {p.email && <p className="flex items-center gap-1"><Mail className="h-3 w-3 text-muted-foreground" /> {p.email}</p>}
+                  {p.phone && <p className="flex items-center gap-1"><Phone className="h-3 w-3 text-muted-foreground" /> {p.phone}</p>}
+                </div>
+              )}
+
+              <p className="text-[10px] text-muted-foreground">{new Date(w.created_at).toLocaleString()}</p>
+              {w.admin_notes && <p className="text-[11px] italic text-muted-foreground">Note: {w.admin_notes}</p>}
+
+              {w.status === "pending" && (
+                <div className="flex gap-2 pt-1">
+                  <button disabled={busy === w.id} onClick={() => process(w.id, true)}
+                    className="flex-1 bg-success/15 text-success font-bold text-xs py-2 rounded-lg inline-flex items-center justify-center gap-1 disabled:opacity-50">
+                    <CheckCircle2 className="h-3 w-3" /> Approve & paid
+                  </button>
+                  <button disabled={busy === w.id} onClick={() => process(w.id, false)}
+                    className="flex-1 bg-destructive/15 text-destructive font-bold text-xs py-2 rounded-lg inline-flex items-center justify-center gap-1 disabled:opacity-50">
+                    <XCircle className="h-3 w-3" /> Reject & refund
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
