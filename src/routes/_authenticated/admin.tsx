@@ -1102,7 +1102,7 @@ function WithdrawalsTab() {
   useEffect(() => { load(); }, [filter]);
 
   async function process(id: string, approve: boolean) {
-    const note = approve ? null : prompt("Reason for rejection (optional):");
+    const note = approve ? undefined : (prompt("Reason for rejection (optional):") || undefined);
     setBusy(id);
     const { error } = await supabase.rpc("process_withdrawal", { p_id: id, p_approve: approve, p_notes: note });
     setBusy(null);
