@@ -11,7 +11,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+92 ");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -71,7 +71,11 @@ function LoginPage() {
               <>
                 <input required value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Full name"
                   className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
-                <input required value={phone} onChange={e => setPhone(e.target.value)} placeholder="+92 3XX XXXXXXX"
+                <input required value={phone} onChange={e => {
+                  let v = e.target.value;
+                  if (!v.startsWith("+92")) v = "+92 " + v.replace(/^\+?92\s*/, "");
+                  setPhone(v);
+                }} placeholder="+92 3XX XXXXXXX"
                   className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
               </>
             )}
