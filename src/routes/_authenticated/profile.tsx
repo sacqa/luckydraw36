@@ -52,6 +52,8 @@ function ProfilePage() {
         </div>
       </div>
 
+      <ProgressCard />
+
       <div className="bg-gradient-card border border-border rounded-3xl p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-display font-bold flex items-center gap-2"><Share2 className="h-4 w-4 text-primary" /> Refer & earn</h2>
