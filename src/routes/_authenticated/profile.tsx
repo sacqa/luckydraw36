@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Copy, LogOut, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { ProgressCard } from "@/components/ProgressCard";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({ component: ProfilePage });
@@ -50,6 +51,8 @@ function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <ProgressCard />
 
       <div className="bg-gradient-card border border-border rounded-3xl p-5 space-y-3">
         <div className="flex items-center justify-between">

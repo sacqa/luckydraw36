@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShieldCheck, Trophy, Hash, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Trophy, Hash, ArrowLeft, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/verify/$id")({
@@ -119,6 +119,20 @@ function VerifyPage() {
             Record ID: <span className="font-mono">{data.id}</span>
           </p>
         </div>
+
+        <button
+          onClick={async () => {
+            const url = typeof window !== "undefined" ? window.location.href : "";
+            const text = `🏆 ${masked} just won ${data.games?.title} (PKR ${Number(data.prize_value || 0).toLocaleString()}) on LUCKDROP!`;
+            try {
+              if (navigator.share) await navigator.share({ title: "LUCKDROP Winner", text, url });
+              else { await navigator.clipboard.writeText(`${text} ${url}`); }
+            } catch {}
+          }}
+          className="w-full bg-gradient-primary text-primary-foreground font-bold py-3 rounded-2xl shadow-glow inline-flex items-center justify-center gap-2"
+        >
+          <Share2 className="h-4 w-4" /> Share winner poster
+        </button>
 
         <p className="text-center text-[11px] text-muted-foreground">
           LUCKDROP · transparent draws
