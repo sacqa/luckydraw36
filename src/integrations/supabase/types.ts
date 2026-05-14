@@ -582,14 +582,69 @@ export type Database = {
           },
         ]
       }
+      withdrawal_requests: {
+        Row: {
+          account_number: string
+          account_title: string
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          id: string
+          payment_method: string
+          processed_at: string | null
+          processed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          user_id: string
+        }
+        Insert: {
+          account_number: string
+          account_title: string
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          payment_method: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          account_title?: string
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_method?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       claim_daily_spin: { Args: never; Returns: Json }
+      process_withdrawal: {
+        Args: { p_approve: boolean; p_id: string; p_notes?: string }
+        Returns: Json
+      }
       purchase_ticket: {
         Args: { p_game_id: string; p_qty: number }
+        Returns: Json
+      }
+      request_withdrawal: {
+        Args: {
+          p_amount: number
+          p_method: string
+          p_number: string
+          p_title: string
+        }
         Returns: Json
       }
     }
@@ -598,6 +653,7 @@ export type Database = {
       deposit_status: "pending" | "approved" | "rejected"
       game_status: "upcoming" | "live" | "completed" | "cancelled"
       txn_type: "credit" | "debit"
+      withdrawal_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -729,6 +785,7 @@ export const Constants = {
       deposit_status: ["pending", "approved", "rejected"],
       game_status: ["upcoming", "live", "completed", "cancelled"],
       txn_type: ["credit", "debit"],
+      withdrawal_status: ["pending", "approved", "rejected"],
     },
   },
 } as const

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, Plus } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Plus, ArrowUpFromLine } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -28,9 +28,14 @@ function WalletPage() {
       <div className="bg-gradient-primary rounded-3xl p-6 text-primary-foreground shadow-glow">
         <p className="text-xs opacity-80">Available balance</p>
         <p className="text-4xl font-display font-extrabold mt-1">PKR {balance.toLocaleString()}</p>
-        <Link to="/deposit" className="mt-4 inline-flex items-center gap-1 bg-background/20 backdrop-blur px-4 py-2 rounded-full text-sm font-bold">
-          <Plus className="h-4 w-4" /> Deposit
-        </Link>
+        <div className="mt-4 flex gap-2">
+          <Link to="/deposit" className="flex-1 inline-flex items-center justify-center gap-1 bg-background/20 backdrop-blur px-4 py-2 rounded-full text-sm font-bold">
+            <Plus className="h-4 w-4" /> Deposit
+          </Link>
+          <Link to="/withdraw" className="flex-1 inline-flex items-center justify-center gap-1 bg-background/20 backdrop-blur px-4 py-2 rounded-full text-sm font-bold">
+            <ArrowUpFromLine className="h-4 w-4" /> Withdraw
+          </Link>
+        </div>
       </div>
 
       <div>

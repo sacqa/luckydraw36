@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifyIdRouteImport } from './routes/verify.$id'
+import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticated/withdraw'
 import { Route as AuthenticatedWinnersRouteImport } from './routes/_authenticated/winners'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -41,6 +42,11 @@ const VerifyIdRoute = VerifyIdRouteImport.update({
   id: '/verify/$id',
   path: '/verify/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWithdrawRoute = AuthenticatedWithdrawRouteImport.update({
+  id: '/withdraw',
+  path: '/withdraw',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedWinnersRoute = AuthenticatedWinnersRouteImport.update({
   id: '/winners',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/winners': typeof AuthenticatedWinnersRoute
+  '/withdraw': typeof AuthenticatedWithdrawRoute
   '/verify/$id': typeof VerifyIdRoute
   '/games/$id': typeof AuthenticatedGamesIdRoute
 }
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/winners': typeof AuthenticatedWinnersRoute
+  '/withdraw': typeof AuthenticatedWithdrawRoute
   '/verify/$id': typeof VerifyIdRoute
   '/games/$id': typeof AuthenticatedGamesIdRoute
 }
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/_authenticated/winners': typeof AuthenticatedWinnersRoute
+  '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
   '/verify/$id': typeof VerifyIdRoute
   '/_authenticated/games/$id': typeof AuthenticatedGamesIdRoute
 }
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/wallet'
     | '/winners'
+    | '/withdraw'
     | '/verify/$id'
     | '/games/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/wallet'
     | '/winners'
+    | '/withdraw'
     | '/verify/$id'
     | '/games/$id'
   id:
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/wallet'
     | '/_authenticated/winners'
+    | '/_authenticated/withdraw'
     | '/verify/$id'
     | '/_authenticated/games/$id'
   fileRoutesById: FileRoutesById
@@ -216,6 +228,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/verify/$id'
       preLoaderRoute: typeof VerifyIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/withdraw': {
+      id: '/_authenticated/withdraw'
+      path: '/withdraw'
+      fullPath: '/withdraw'
+      preLoaderRoute: typeof AuthenticatedWithdrawRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/winners': {
       id: '/_authenticated/winners'
@@ -292,6 +311,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
   AuthenticatedWinnersRoute: typeof AuthenticatedWinnersRoute
+  AuthenticatedWithdrawRoute: typeof AuthenticatedWithdrawRoute
   AuthenticatedGamesIdRoute: typeof AuthenticatedGamesIdRoute
 }
 
@@ -304,6 +324,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedWalletRoute: AuthenticatedWalletRoute,
   AuthenticatedWinnersRoute: AuthenticatedWinnersRoute,
+  AuthenticatedWithdrawRoute: AuthenticatedWithdrawRoute,
   AuthenticatedGamesIdRoute: AuthenticatedGamesIdRoute,
 }
 
