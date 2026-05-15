@@ -3,6 +3,7 @@ import { Outlet, createRootRouteWithContext, useRouter, HeadContent, Scripts } f
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
+import { PWAInstall } from "@/components/PWAInstall";
 
 function NotFoundComponent() {
   return (
@@ -76,6 +77,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Outlet />
+        <PWAInstall />
         <Toaster position="top-center" richColors />
       </AuthProvider>
     </QueryClientProvider>
