@@ -2,7 +2,34 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Sparkles, ShieldCheck, Zap, Trophy, ArrowRight } from "lucide-react";
 
-export const Route = createFileRoute("/")({ component: Landing });
+export const Route = createFileRoute("/")({
+  component: Landing,
+  head: () => ({
+    meta: [
+      { title: "LUCKDROP — Win iPhone, Bikes & Cash from PKR 5 in Pakistan" },
+      { name: "description", content: "Pakistan's #1 lucky draw platform. Real iPhones, Honda bikes, gold and cash prizes drawn live every week. Play from PKR 5 with Easypaisa or JazzCash." },
+      { name: "keywords", content: "lucky draw pakistan, win iphone pakistan, easypaisa lucky draw, jazzcash draw, online lottery pakistan, luckdrop" },
+      { property: "og:title", content: "LUCKDROP — Win iPhone, Bikes & Cash from PKR 5" },
+      { property: "og:description", content: "Pakistan's premium lucky draw platform. Drawn live every week." },
+      { property: "og:url", content: "https://luck5.lovable.app/" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://luck5.lovable.app/" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "LUCKDROP",
+        url: "https://luck5.lovable.app/",
+        applicationCategory: "GameApplication",
+        operatingSystem: "Web, Android, iOS",
+        description: "Pakistan's premium lucky draw and rewards platform.",
+        offers: { "@type": "Offer", price: "5", priceCurrency: "PKR" },
+      }),
+    }],
+  }),
+});
 
 const prizes = [
   { name: "iPhone 17 Pro Max", img: "https://images.unsplash.com/photo-1592286927505-1def25115558?w=600" },

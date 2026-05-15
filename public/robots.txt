@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /withdraw
+Disallow: /wallet
+Disallow: /profile
+Disallow: /notifications
+
+Sitemap: https://luck5.lovable.app/sitemap.xml
