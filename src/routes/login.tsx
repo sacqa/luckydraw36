@@ -1,19 +1,33 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/login")({ component: LoginPage });
+export const Route = createFileRoute("/login")({
+  component: LoginPage,
+  head: () => ({
+    meta: [
+      { title: "Sign in — LUCKDROP" },
+      { name: "description", content: "Sign in or create your LUCKDROP account to start winning prizes from PKR 5." },
+      { property: "og:title", content: "Sign in — LUCKDROP" },
+      { property: "og:description", content: "Sign in or create your LUCKDROP account to start winning prizes from PKR 5." },
+      { property: "og:url", content: "https://luck5.lovable.app/login" },
+    ],
+    links: [{ rel: "canonical", href: "https://luck5.lovable.app/login" }],
+  }),
+});
 
 function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [step, setStep] = useState<"form" | "otp">("form");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("+92 ");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -29,17 +43,52 @@ function LoginPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created. Welcome to LUCKDROP!");
+        toast.success("We sent a 6-digit code to your email.");
+        setStep("otp");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          if (error.message.toLowerCase().includes("not confirmed") || error.message.toLowerCase().includes("confirm")) {
+            const { error: otpErr } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+            if (otpErr) throw otpErr;
+            toast.info("Email not verified. We sent you a 6-digit code.");
+            setStep("otp");
+            return;
+          }
+          throw error;
+        }
         toast.success("Signed in");
+        navigate({ to: "/home" });
       }
-      navigate({ to: "/home" });
     } catch (err: any) {
       toast.error(err.message || "Authentication failed");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function verify(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
+      if (error) throw error;
+      toast.success("Email verified — welcome!");
+      navigate({ to: "/home" });
+    } catch (err: any) {
+      toast.error(err.message || "Invalid code");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resend() {
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      toast.success("Code resent");
+    } catch (err: any) {
+      toast.error(err.message || "Could not resend");
     }
   }
 
@@ -50,49 +99,69 @@ function LoginPage() {
           <div className="w-14 h-14 rounded-2xl bg-gradient-primary mx-auto grid place-items-center shadow-glow mb-3">
             <Sparkles className="h-7 w-7 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-display font-bold">{mode === "login" ? "Welcome back" : "Join LUCKDROP"}</h1>
+          <h1 className="text-3xl font-display font-bold">
+            {step === "otp" ? "Verify your email" : mode === "login" ? "Welcome back" : "Join LUCKDROP"}
+          </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {mode === "login" ? "Sign in to your account" : "Start winning from PKR 5"}
+            {step === "otp" ? `Enter the code we sent to ${email}` : mode === "login" ? "Sign in to your account" : "Start winning from PKR 5"}
           </p>
         </div>
 
         <div className="glass rounded-3xl p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-2 p-1 bg-secondary rounded-full">
-            {(["login","signup"] as const).map(m => (
-              <button key={m} onClick={() => setMode(m)}
-                className={`py-2 rounded-full text-sm font-semibold transition ${mode===m ? "bg-gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground"}`}>
-                {m === "login" ? "Sign in" : "Sign up"}
+          {step === "form" && (
+            <div className="grid grid-cols-2 gap-2 p-1 bg-secondary rounded-full">
+              {(["login","signup"] as const).map(m => (
+                <button key={m} onClick={() => setMode(m)}
+                  className={`py-2 rounded-full text-sm font-semibold transition ${mode===m ? "bg-gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground"}`}>
+                  {m === "login" ? "Sign in" : "Sign up"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {step === "form" ? (
+            <form onSubmit={submit} className="space-y-3">
+              {mode === "signup" && (
+                <>
+                  <input required value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Full name"
+                    className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
+                  <input required value={phone} onChange={e => {
+                    let v = e.target.value;
+                    if (!v.startsWith("+92")) v = "+92 " + v.replace(/^\+?92\s*/, "");
+                    setPhone(v);
+                  }} placeholder="+92 3XX XXXXXXX"
+                    className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
+                </>
+              )}
+              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email"
+                className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
+              <input required type="password" minLength={6} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
+                className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
+              <button disabled={loading} type="submit"
+                className="w-full bg-gradient-primary text-primary-foreground font-bold py-3.5 rounded-xl shadow-glow flex items-center justify-center gap-2 disabled:opacity-60">
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {mode === "login" ? "Sign in" : "Create account"}
               </button>
-            ))}
-          </div>
-
-          <form onSubmit={submit} className="space-y-3">
-            {mode === "signup" && (
-              <>
-                <input required value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Full name"
-                  className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
-                <input required value={phone} onChange={e => {
-                  let v = e.target.value;
-                  if (!v.startsWith("+92")) v = "+92 " + v.replace(/^\+?92\s*/, "");
-                  setPhone(v);
-                }} placeholder="+92 3XX XXXXXXX"
-                  className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
-              </>
-            )}
-            <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email"
-              className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
-            <input required type="password" minLength={6} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
-              className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
-            <button disabled={loading} type="submit"
-              className="w-full bg-gradient-primary text-primary-foreground font-bold py-3.5 rounded-xl shadow-glow flex items-center justify-center gap-2 disabled:opacity-60">
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {mode === "login" ? "Sign in" : "Create account"}
-            </button>
-          </form>
-
-          <p className="text-[11px] text-muted-foreground text-center">
-            By continuing you agree to our Terms & Privacy. Mobile OTP coming soon.
-          </p>
+              <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
+                <ShieldCheck className="h-3 w-3" /> Email OTP verification active
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={verify} className="space-y-3">
+              <input required value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}
+                inputMode="numeric" maxLength={6} placeholder="6-digit code"
+                className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] outline-none focus:border-primary" />
+              <button disabled={loading || otp.length !== 6} type="submit"
+                className="w-full bg-gradient-primary text-primary-foreground font-bold py-3.5 rounded-xl shadow-glow flex items-center justify-center gap-2 disabled:opacity-60">
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                Verify & continue
+              </button>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <button type="button" onClick={() => setStep("form")} className="underline">Change email</button>
+                <button type="button" onClick={resend} className="underline">Resend code</button>
+              </div>
+            </form>
+          )}
         </div>
       </motion.div>
     </div>
