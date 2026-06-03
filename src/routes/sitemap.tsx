@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Home, Wallet, Trophy, User, Bell, Gamepad2, Gift, Crown, ShieldCheck, LogIn, ArrowDownToLine, ArrowUpFromLine, Sparkles } from "lucide-react";
+import { Home, Wallet, Trophy, User, Bell, Gamepad2, Gift, Crown, ShieldCheck, LogIn, ArrowDownToLine, ArrowUpFromLine, Sparkles, MessageCircle, BadgeCheck } from "lucide-react";
 
 export const Route = createFileRoute("/sitemap")({
   component: SitemapPage,
