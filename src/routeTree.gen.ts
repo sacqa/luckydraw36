@@ -23,6 +23,7 @@ import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
+import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedDepositRouteImport } from './routes/_authenticated/deposit'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -99,6 +100,11 @@ const AuthenticatedLeaderboardRoute =
     path: '/leaderboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
+  id: '/kyc',
+  path: '/kyc',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/deposit': typeof AuthenticatedDepositRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/kyc': typeof AuthenticatedKycRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/deposit': typeof AuthenticatedDepositRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/kyc': typeof AuthenticatedKycRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/deposit': typeof AuthenticatedDepositRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/deposit'
     | '/home'
+    | '/kyc'
     | '/leaderboard'
     | '/notifications'
     | '/profile'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/deposit'
     | '/home'
+    | '/kyc'
     | '/leaderboard'
     | '/notifications'
     | '/profile'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/deposit'
     | '/_authenticated/home'
+    | '/_authenticated/kyc'
     | '/_authenticated/leaderboard'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
@@ -349,6 +361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/kyc': {
+      id: '/_authenticated/kyc'
+      path: '/kyc'
+      fullPath: '/kyc'
+      preLoaderRoute: typeof AuthenticatedKycRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
@@ -384,6 +403,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDepositRoute: typeof AuthenticatedDepositRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -399,6 +419,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDepositRoute: AuthenticatedDepositRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
