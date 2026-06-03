@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Home, Wallet, Trophy, User, Bell, Gamepad2, Gift, Crown, ShieldCheck, LogIn, ArrowDownToLine, ArrowUpFromLine, Sparkles } from "lucide-react";
+import { Home, Wallet, Trophy, User, Bell, Gamepad2, Gift, Crown, ShieldCheck, LogIn, ArrowDownToLine, ArrowUpFromLine, Sparkles, MessageCircle, BadgeCheck } from "lucide-react";
 
 export const Route = createFileRoute("/sitemap")({
   component: SitemapPage,
@@ -37,6 +37,9 @@ const tree = [
       { Icon: ArrowUpFromLine, label: "Withdraw", path: "/withdraw", desc: "Cash-out requests" },
       { Icon: Trophy, label: "Winners", path: "/winners", desc: "Recent winners list" },
       { Icon: Crown, label: "Leaderboard", path: "/leaderboard", desc: "Top winners / spenders / referrers" },
+      { Icon: Crown, label: "VIP & Cashback", path: "/vip", desc: "Tier perks + weekly cashback claim" },
+      { Icon: MessageCircle, label: "Support", path: "/support", desc: "Live chat tickets with admin" },
+      { Icon: BadgeCheck, label: "KYC verification", path: "/kyc", desc: "CNIC + selfie for big withdrawals" },
       { Icon: Bell, label: "Notifications", path: "/notifications", desc: "All alerts" },
       { Icon: User, label: "Profile", path: "/profile", desc: "Account, XP, badges, daily spin" },
     ],
