@@ -68,6 +68,24 @@ function ProfilePage() {
         </div>
       </div>
 
+      <div className="bg-gradient-card border border-border rounded-3xl overflow-hidden">
+        {[
+          { to: "/vip", Icon: Crown, label: "VIP & Cashback", hint: "Earn rewards on every spend", color: "text-amber-400" },
+          { to: "/support", Icon: MessageCircle, label: "Support", hint: "Chat with our team", color: "text-primary" },
+          { to: "/kyc", Icon: ShieldCheck, label: "Identity verification", hint: "Required for big withdrawals", color: "text-emerald-400" },
+        ].map(({ to, Icon, label, hint, color }) => (
+          <Link key={to} to={to as any} className="flex items-center gap-3 p-4 hover:bg-secondary/40 transition border-b border-border last:border-0">
+            <Icon className={`h-5 w-5 ${color}`} />
+            <div className="flex-1">
+              <p className="font-semibold text-sm">{label}</p>
+              <p className="text-[11px] text-muted-foreground">{hint}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        ))}
+      </div>
+
+
       <button onClick={async () => { await signOut(); navigate({ to: "/" }); }}
         className="w-full bg-destructive/15 text-destructive py-3 rounded-2xl font-semibold inline-flex items-center justify-center gap-2">
         <LogOut className="h-4 w-4" /> Sign out
