@@ -65,6 +65,36 @@ export type Database = {
         }
         Relationships: []
       }
+      cashback_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          net_loss: number
+          pct: number
+          tier_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          net_loss: number
+          pct: number
+          tier_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          net_loss?: number
+          pct?: number
+          tier_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       deposit_methods: {
         Row: {
           account_number: string
@@ -268,6 +298,51 @@ export type Database = {
         }
         Relationships: []
       }
+      kyc_submissions: {
+        Row: {
+          admin_notes: string | null
+          cnic_back_url: string
+          cnic_front_url: string
+          cnic_number: string
+          created_at: string
+          full_name: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_url: string
+          status: Database["public"]["Enums"]["kyc_status"]
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          cnic_back_url: string
+          cnic_front_url: string
+          cnic_number: string
+          created_at?: string
+          full_name: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url: string
+          status?: Database["public"]["Enums"]["kyc_status"]
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          cnic_back_url?: string
+          cnic_front_url?: string
+          cnic_number?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string
+          status?: Database["public"]["Enums"]["kyc_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -371,6 +446,74 @@ export type Database = {
         }
         Relationships: []
       }
+      support_messages: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          ticket_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          last_message_at: string
+          priority: Database["public"]["Enums"]["support_priority"]
+          status: Database["public"]["Enums"]["support_status"]
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          status?: Database["public"]["Enums"]["support_status"]
+          subject: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          status?: Database["public"]["Enums"]["support_status"]
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tickets: {
         Row: {
           created_at: string
@@ -465,6 +608,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vip_tiers: {
+        Row: {
+          cashback_pct: number
+          color: string
+          icon: string
+          id: string
+          min_spend: number
+          name: string
+          perks: Json
+          sort_order: number
+        }
+        Insert: {
+          cashback_pct?: number
+          color?: string
+          icon?: string
+          id: string
+          min_spend?: number
+          name: string
+          perks?: Json
+          sort_order?: number
+        }
+        Update: {
+          cashback_pct?: number
+          color?: string
+          icon?: string
+          id?: string
+          min_spend?: number
+          name?: string
+          perks?: Json
+          sort_order?: number
+        }
+        Relationships: []
       }
       wallet_transactions: {
         Row: {
@@ -626,10 +802,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_vip: {
+        Row: {
+          lifetime_spend: number | null
+          tier_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          lifetime_spend?: never
+          tier_id?: never
+          user_id?: string | null
+        }
+        Update: {
+          lifetime_spend?: never
+          tier_id?: never
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallets_user_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       claim_daily_spin: { Args: never; Returns: Json }
+      claim_weekly_cashback: { Args: never; Returns: Json }
       process_withdrawal: {
         Args: { p_approve: boolean; p_id: string; p_notes?: string }
         Returns: Json
@@ -652,6 +854,9 @@ export type Database = {
       app_role: "admin" | "user"
       deposit_status: "pending" | "approved" | "rejected"
       game_status: "upcoming" | "live" | "completed" | "cancelled"
+      kyc_status: "pending" | "approved" | "rejected"
+      support_priority: "low" | "normal" | "high" | "urgent"
+      support_status: "open" | "pending" | "resolved" | "closed"
       txn_type: "credit" | "debit"
       withdrawal_status: "pending" | "approved" | "rejected"
     }
@@ -784,6 +989,9 @@ export const Constants = {
       app_role: ["admin", "user"],
       deposit_status: ["pending", "approved", "rejected"],
       game_status: ["upcoming", "live", "completed", "cancelled"],
+      kyc_status: ["pending", "approved", "rejected"],
+      support_priority: ["low", "normal", "high", "urgent"],
+      support_status: ["open", "pending", "resolved", "closed"],
       txn_type: ["credit", "debit"],
       withdrawal_status: ["pending", "approved", "rejected"],
     },
