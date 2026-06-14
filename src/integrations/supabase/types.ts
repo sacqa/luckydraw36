@@ -446,6 +446,30 @@ export type Database = {
         }
         Relationships: []
       }
+      responsible_gaming_limits: {
+        Row: {
+          daily_spend_limit: number | null
+          self_excluded_until: string | null
+          updated_at: string
+          user_id: string
+          weekly_spend_limit: number | null
+        }
+        Insert: {
+          daily_spend_limit?: number | null
+          self_excluded_until?: string | null
+          updated_at?: string
+          user_id: string
+          weekly_spend_limit?: number | null
+        }
+        Update: {
+          daily_spend_limit?: number | null
+          self_excluded_until?: string | null
+          updated_at?: string
+          user_id?: string
+          weekly_spend_limit?: number | null
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           author_id: string
