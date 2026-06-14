@@ -802,6 +802,39 @@ export type Database = {
       }
     }
     Views: {
+      deposit_methods_public: {
+        Row: {
+          account_number: string | null
+          account_title: string | null
+          id: string | null
+          instructions: string | null
+          is_active: boolean | null
+          method_name: string | null
+          method_type: string | null
+          qr_image: string | null
+        }
+        Insert: {
+          account_number?: string | null
+          account_title?: string | null
+          id?: string | null
+          instructions?: string | null
+          is_active?: boolean | null
+          method_name?: string | null
+          method_type?: string | null
+          qr_image?: string | null
+        }
+        Update: {
+          account_number?: string | null
+          account_title?: string | null
+          id?: string | null
+          instructions?: string | null
+          is_active?: boolean | null
+          method_name?: string | null
+          method_type?: string | null
+          qr_image?: string | null
+        }
+        Relationships: []
+      }
       user_vip: {
         Row: {
           lifetime_spend: number | null
