@@ -4,7 +4,7 @@ import {
   CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone,
   Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck, Activity,
   Layout as LayoutIcon, QrCode, Globe, Eye, Mail, Phone, User as UserIcon, ChevronRight, Shuffle,
-  ArrowUpFromLine,
+  ArrowUpFromLine, MessageCircle, FileCheck, Send, Clock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,13 +15,15 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "broadcast";
+type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "kyc" | "support" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "broadcast";
 
 const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "stats", label: "Overview", Icon: BarChart3 },
   { id: "activity", label: "Activity", Icon: Activity },
   { id: "deposits", label: "Deposits", Icon: CreditCard },
   { id: "withdrawals", label: "Withdrawals", Icon: ArrowUpFromLine },
+  { id: "kyc", label: "KYC Review", Icon: FileCheck },
+  { id: "support", label: "Support", Icon: MessageCircle },
   { id: "users", label: "Users", Icon: Users },
   { id: "games", label: "Games", Icon: Sparkles },
   { id: "winners", label: "Winners", Icon: Trophy },
@@ -108,6 +110,8 @@ function AdminPage() {
             {tab === "activity" && <ActivityTab />}
             {tab === "deposits" && <DepositsTab adminId={user?.id} />}
             {tab === "withdrawals" && <WithdrawalsTab />}
+            {tab === "kyc" && <KycTab />}
+            {tab === "support" && <SupportTab adminId={user?.id} />}
             {tab === "games" && <GamesTab />}
             {tab === "winners" && <WinnersTab />}
             {tab === "users" && <UsersTab />}
