@@ -19,7 +19,7 @@ function DepositPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    supabase.from("deposit_methods").select("*").eq("is_active", true).then(({ data }) => {
+    supabase.from("deposit_methods_public").select("*").eq("is_active", true).then(({ data }) => {
       if (data) { setMethods(data); setActive(data[0]); }
     });
   }, []);
