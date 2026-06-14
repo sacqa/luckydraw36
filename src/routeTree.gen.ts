@@ -20,6 +20,7 @@ import { Route as AuthenticatedWinnersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as AuthenticatedVipRouteImport } from './routes/_authenticated/vip'
 import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
+import { Route as AuthenticatedResponsibleGamingRouteImport } from './routes/_authenticated/responsible-gaming'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
@@ -83,6 +84,12 @@ const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedResponsibleGamingRoute =
+  AuthenticatedResponsibleGamingRouteImport.update({
+    id: '/responsible-gaming',
+    path: '/responsible-gaming',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/responsible-gaming': typeof AuthenticatedResponsibleGamingRoute
   '/support': typeof AuthenticatedSupportRoute
   '/vip': typeof AuthenticatedVipRoute
   '/wallet': typeof AuthenticatedWalletRoute
@@ -158,6 +166,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/responsible-gaming': typeof AuthenticatedResponsibleGamingRoute
   '/support': typeof AuthenticatedSupportRoute
   '/vip': typeof AuthenticatedVipRoute
   '/wallet': typeof AuthenticatedWalletRoute
@@ -180,6 +189,7 @@ export interface FileRoutesById {
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/responsible-gaming': typeof AuthenticatedResponsibleGamingRoute
   '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/vip': typeof AuthenticatedVipRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/notifications'
     | '/profile'
+    | '/responsible-gaming'
     | '/support'
     | '/vip'
     | '/wallet'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/notifications'
     | '/profile'
+    | '/responsible-gaming'
     | '/support'
     | '/vip'
     | '/wallet'
@@ -243,6 +255,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leaderboard'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
+    | '/_authenticated/responsible-gaming'
     | '/_authenticated/support'
     | '/_authenticated/vip'
     | '/_authenticated/wallet'
@@ -340,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupportRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/responsible-gaming': {
+      id: '/_authenticated/responsible-gaming'
+      path: '/responsible-gaming'
+      fullPath: '/responsible-gaming'
+      preLoaderRoute: typeof AuthenticatedResponsibleGamingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -407,6 +427,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedResponsibleGamingRoute: typeof AuthenticatedResponsibleGamingRoute
   AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
   AuthenticatedVipRoute: typeof AuthenticatedVipRoute
   AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
@@ -423,6 +444,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedResponsibleGamingRoute: AuthenticatedResponsibleGamingRoute,
   AuthenticatedSupportRoute: AuthenticatedSupportRoute,
   AuthenticatedVipRoute: AuthenticatedVipRoute,
   AuthenticatedWalletRoute: AuthenticatedWalletRoute,

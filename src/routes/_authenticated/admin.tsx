@@ -4,7 +4,7 @@ import {
   CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone,
   Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck, Activity,
   Layout as LayoutIcon, QrCode, Globe, Eye, Mail, Phone, User as UserIcon, ChevronRight, Shuffle,
-  ArrowUpFromLine,
+  ArrowUpFromLine, MessageCircle, FileCheck, Send, Clock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,13 +15,15 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "broadcast";
+type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "kyc" | "support" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "broadcast";
 
 const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "stats", label: "Overview", Icon: BarChart3 },
   { id: "activity", label: "Activity", Icon: Activity },
   { id: "deposits", label: "Deposits", Icon: CreditCard },
   { id: "withdrawals", label: "Withdrawals", Icon: ArrowUpFromLine },
+  { id: "kyc", label: "KYC Review", Icon: FileCheck },
+  { id: "support", label: "Support", Icon: MessageCircle },
   { id: "users", label: "Users", Icon: Users },
   { id: "games", label: "Games", Icon: Sparkles },
   { id: "winners", label: "Winners", Icon: Trophy },
@@ -108,6 +110,8 @@ function AdminPage() {
             {tab === "activity" && <ActivityTab />}
             {tab === "deposits" && <DepositsTab adminId={user?.id} />}
             {tab === "withdrawals" && <WithdrawalsTab />}
+            {tab === "kyc" && <KycTab />}
+            {tab === "support" && <SupportTab adminId={user?.id} />}
             {tab === "games" && <GamesTab />}
             {tab === "winners" && <WinnersTab />}
             {tab === "users" && <UsersTab />}
@@ -1178,3 +1182,285 @@ function WithdrawalsTab() {
   );
 }
 
+
+/* ============ KYC REVIEW ============ */
+function KycTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [selected, setSelected] = useState<any | null>(null);
+  const [notes, setNotes] = useState("");
+
+  async function load() {
+    let q = supabase.from("kyc_submissions").select("*").order("created_at", { ascending: false });
+    if (filter !== "all") q = q.eq("status", filter);
+    const { data } = await q;
+    setItems(data || []);
+  }
+  useEffect(() => { load(); }, [filter]);
+
+  async function signedUrl(path: string) {
+    if (!path) return null;
+    const { data } = await supabase.storage.from("kyc-documents").createSignedUrl(path, 60 * 10);
+    return data?.signedUrl || null;
+  }
+
+  async function review(id: string, approve: boolean) {
+    setBusy(id);
+    const { error } = await supabase
+      .from("kyc_submissions")
+      .update({
+        status: approve ? "approved" : "rejected",
+        admin_notes: notes.trim() || null,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    setBusy(null);
+    if (error) return toast.error(error.message);
+    toast.success(`KYC ${approve ? "approved" : "rejected"}`);
+    setSelected(null); setNotes("");
+    load();
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 flex-wrap">
+        {(["pending", "approved", "rejected", "all"] as const).map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${filter === f ? "bg-gradient-primary text-primary-foreground shadow-glow" : "bg-secondary text-muted-foreground"}`}>
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {items.length === 0 && <p className="text-xs text-muted-foreground">No submissions.</p>}
+
+      <div className="grid gap-3">
+        {items.map(k => (
+          <div key={k.id} className="bg-gradient-card border border-border rounded-2xl p-4 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-semibold text-sm truncate">{k.full_name}</p>
+                <p className="text-[11px] text-muted-foreground font-mono">CNIC: {k.cnic_number}</p>
+                <p className="text-[10px] text-muted-foreground">{new Date(k.created_at).toLocaleString()}</p>
+              </div>
+              <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${
+                k.status === "approved" ? "bg-emerald-500/15 text-emerald-400" :
+                k.status === "rejected" ? "bg-destructive/15 text-destructive" :
+                "bg-amber-500/15 text-amber-400"}`}>{k.status}</span>
+            </div>
+            <button onClick={() => setSelected(k)} className="w-full bg-primary/15 text-primary text-xs font-semibold py-2 rounded-lg">
+              <Eye className="h-3 w-3 inline mr-1" /> View documents
+            </button>
+            {k.status === "pending" && (
+              <div className="grid grid-cols-2 gap-2">
+                <button disabled={busy === k.id} onClick={() => { setSelected(k); }}
+                  className="bg-emerald-500/15 text-emerald-400 font-bold text-xs py-2 rounded-lg disabled:opacity-50">
+                  Review
+                </button>
+              </div>
+            )}
+            {k.admin_notes && <p className="text-[11px] text-muted-foreground italic">Note: {k.admin_notes}</p>}
+          </div>
+        ))}
+      </div>
+
+      {selected && (
+        <KycReviewModal
+          item={selected}
+          notes={notes}
+          setNotes={setNotes}
+          onClose={() => { setSelected(null); setNotes(""); }}
+          onApprove={() => review(selected.id, true)}
+          onReject={() => review(selected.id, false)}
+          busy={busy === selected.id}
+          getSignedUrl={signedUrl}
+        />
+      )}
+    </div>
+  );
+}
+
+function KycReviewModal({ item, notes, setNotes, onClose, onApprove, onReject, busy, getSignedUrl }: any) {
+  const [urls, setUrls] = useState<{ front?: string; back?: string; selfie?: string }>({});
+  useEffect(() => {
+    (async () => {
+      const [front, back, selfie] = await Promise.all([
+        getSignedUrl(item.cnic_front_url),
+        getSignedUrl(item.cnic_back_url),
+        getSignedUrl(item.selfie_url),
+      ]);
+      setUrls({ front, back, selfie });
+    })();
+  }, [item]);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur grid place-items-center p-4" onClick={onClose}>
+      <div className="bg-card border border-border rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="font-display font-bold text-lg">KYC Review</h3>
+          <button onClick={onClose} className="text-muted-foreground"><XCircle className="h-5 w-5" /></button>
+        </div>
+        <div className="text-sm">
+          <p><span className="text-muted-foreground">Name:</span> <span className="font-semibold">{item.full_name}</span></p>
+          <p><span className="text-muted-foreground">CNIC:</span> <span className="font-mono">{item.cnic_number}</span></p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {(["front", "back", "selfie"] as const).map(k => (
+            <div key={k}>
+              <p className="text-[10px] uppercase text-muted-foreground font-bold mb-1">{k}</p>
+              {urls[k] ? <img src={urls[k]} alt={k} className="w-full aspect-square object-cover rounded-lg border border-border" />
+                : <div className="w-full aspect-square bg-secondary rounded-lg grid place-items-center text-[10px] text-muted-foreground">loading…</div>}
+            </div>
+          ))}
+        </div>
+        <textarea value={notes} onChange={e => setNotes(e.target.value)}
+          placeholder="Internal notes (sent to user on reject)…" rows={3}
+          className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-primary" />
+        {item.status === "pending" && (
+          <div className="grid grid-cols-2 gap-2">
+            <button disabled={busy} onClick={onApprove} className="bg-emerald-500 text-white font-bold py-2.5 rounded-xl inline-flex items-center justify-center gap-1 disabled:opacity-50">
+              <CheckCircle2 className="h-4 w-4" /> Approve
+            </button>
+            <button disabled={busy} onClick={onReject} className="bg-destructive text-destructive-foreground font-bold py-2.5 rounded-xl inline-flex items-center justify-center gap-1 disabled:opacity-50">
+              <XCircle className="h-4 w-4" /> Reject
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============ SUPPORT ============ */
+function SupportTab({ adminId }: { adminId?: string }) {
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [filter, setFilter] = useState<"open" | "pending" | "closed" | "all">("open");
+  const [selected, setSelected] = useState<any | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+
+  async function load() {
+    let q = supabase.from("support_tickets").select("*").order("last_message_at", { ascending: false });
+    if (filter !== "all") q = q.eq("status", filter);
+    const { data } = await q;
+    setTickets(data || []);
+  }
+  useEffect(() => { load(); }, [filter]);
+
+  async function open(t: any) {
+    setSelected(t);
+    const { data } = await supabase
+      .from("support_messages")
+      .select("*")
+      .eq("ticket_id", t.id)
+      .order("created_at");
+    setMessages(data || []);
+    const ch = supabase
+      .channel(`admin-ticket-${t.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages", filter: `ticket_id=eq.${t.id}` },
+        (p) => setMessages(m => [...m, p.new]))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }
+
+  async function send() {
+    if (!selected || !adminId || !reply.trim()) return;
+    setSending(true);
+    const body = reply.trim();
+    setReply("");
+    const { error } = await supabase.from("support_messages").insert({
+      ticket_id: selected.id, author_id: adminId, is_admin: true, body,
+    });
+    setSending(false);
+    if (error) { toast.error(error.message); setReply(body); }
+  }
+
+  async function setStatus(s: "open" | "pending" | "closed") {
+    if (!selected) return;
+    const { error } = await supabase.from("support_tickets").update({ status: s }).eq("id", selected.id);
+    if (error) return toast.error(error.message);
+    toast.success(`Marked ${s}`);
+    setSelected({ ...selected, status: s });
+    load();
+  }
+
+  if (selected) {
+    return (
+      <div className="space-y-3">
+        <button onClick={() => setSelected(null)} className="text-xs text-muted-foreground inline-flex items-center gap-1">
+          <ChevronRight className="h-3 w-3 rotate-180" /> Back to tickets
+        </button>
+        <div className="bg-gradient-card border border-border rounded-2xl p-4 space-y-1">
+          <p className="font-display font-bold">{selected.subject}</p>
+          <p className="text-[11px] text-muted-foreground capitalize">
+            {selected.category} · {selected.priority} priority · {selected.status}
+          </p>
+          <div className="flex gap-2 pt-2">
+            {(["open", "pending", "closed"] as const).map(s => (
+              <button key={s} onClick={() => setStatus(s)}
+                className={`text-[11px] px-3 py-1 rounded-full font-semibold capitalize ${selected.status === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-gradient-card border border-border rounded-2xl p-3 space-y-2 max-h-[50vh] overflow-y-auto">
+          {messages.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No messages yet.</p>}
+          {messages.map(m => (
+            <div key={m.id} className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.is_admin ? "ml-auto bg-gradient-primary text-primary-foreground" : "bg-secondary"}`}>
+              <p>{m.body}</p>
+              <p className="text-[9px] opacity-70 mt-1">{m.is_admin ? "Admin" : "User"} · {new Date(m.created_at).toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <input value={reply} onChange={e => setReply(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+            placeholder="Reply to user…"
+            className="flex-1 bg-input/50 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-primary" />
+          <button disabled={sending || !reply.trim()} onClick={send}
+            className="bg-gradient-primary text-primary-foreground font-bold px-4 rounded-xl shadow-glow disabled:opacity-50 inline-flex items-center gap-1">
+            <Send className="h-4 w-4" /> Send
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 flex-wrap">
+        {(["open", "pending", "closed", "all"] as const).map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${filter === f ? "bg-gradient-primary text-primary-foreground shadow-glow" : "bg-secondary text-muted-foreground"}`}>
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {tickets.length === 0 && <p className="text-xs text-muted-foreground">No tickets.</p>}
+
+      <div className="grid gap-2">
+        {tickets.map(t => (
+          <button key={t.id} onClick={() => open(t)}
+            className="text-left bg-gradient-card border border-border rounded-2xl p-4 hover:border-primary transition">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-semibold text-sm truncate">{t.subject}</p>
+              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                t.status === "open" ? "bg-emerald-500/15 text-emerald-400" :
+                t.status === "pending" ? "bg-amber-500/15 text-amber-400" :
+                "bg-secondary text-muted-foreground"}`}>{t.status}</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1 capitalize inline-flex items-center gap-2">
+              <Clock className="h-3 w-3" /> {new Date(t.last_message_at).toLocaleString()} · {t.category} · {t.priority}
+            </p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

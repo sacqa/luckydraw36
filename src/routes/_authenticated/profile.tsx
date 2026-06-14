@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Copy, LogOut, Share2, Crown, MessageCircle, ShieldCheck, ChevronRight } from "lucide-react";
+import { Copy, LogOut, Share2, Crown, MessageCircle, ShieldCheck, ChevronRight, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ProgressCard } from "@/components/ProgressCard";
@@ -73,6 +73,7 @@ function ProfilePage() {
           { to: "/vip", Icon: Crown, label: "VIP & Cashback", hint: "Earn rewards on every spend", color: "text-amber-400" },
           { to: "/support", Icon: MessageCircle, label: "Support", hint: "Chat with our team", color: "text-primary" },
           { to: "/kyc", Icon: ShieldCheck, label: "Identity verification", hint: "Required for big withdrawals", color: "text-emerald-400" },
+          { to: "/responsible-gaming", Icon: ShieldAlert, label: "Responsible Play", hint: "Spending limits & self-exclusion", color: "text-rose-400" },
         ].map(({ to, Icon, label, hint, color }) => (
           <Link key={to} to={to as any} className="flex items-center gap-3 p-4 hover:bg-secondary/40 transition border-b border-border last:border-0">
             <Icon className={`h-5 w-5 ${color}`} />
