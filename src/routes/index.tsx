@@ -91,7 +91,7 @@ const faqs = [
 function Landing() {
   const countdown = useCountdown(Date.now() + 4 * 3600_000 + 22 * 60_000 + 15 * 1000);
   return (
-    <div className="min-h-screen bg-[#08070b] text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
+    <div className="min-h-screen bg-[#08070b] text-white pb-28 md:pb-0" style={{ fontFamily: "Poppins, sans-serif" }}>
       {/* Header */}
       <header className="max-w-7xl mx-auto px-4 lg:px-8 pt-6 pb-2 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
