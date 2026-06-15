@@ -134,7 +134,7 @@ function Landing() {
                 How it Works
               </a>
             </div>
-          </motion.div>
+          </div>
 
           {/* Jackpot */}
           <div className="md:col-span-4 md:row-span-2 bg-[#12121a] rounded-3xl p-6 border border-white/5 flex flex-col justify-between hover:border-[#ff6b35]/40 transition-colors">
