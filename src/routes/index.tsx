@@ -91,7 +91,7 @@ const faqs = [
 function Landing() {
   const countdown = useCountdown(Date.now() + 4 * 3600_000 + 22 * 60_000 + 15 * 1000);
   return (
-    <div className="min-h-screen bg-[#08070b] text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
+    <div className="min-h-screen bg-[#08070b] text-white pb-28 md:pb-0" style={{ fontFamily: "Poppins, sans-serif" }}>
       {/* Header */}
       <header className="max-w-7xl mx-auto px-4 lg:px-8 pt-6 pb-2 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
@@ -325,6 +325,21 @@ function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile sticky CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+        <div className="bg-[#12121a]/95 backdrop-blur-xl border-t border-white/10 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <Link
+            to="/login"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white rounded-2xl font-bold shadow-lg shadow-[#ff6b35]/25 active:scale-[0.97] transition-transform"
+          >
+            <Zap className="h-5 w-5" /> Deposit & Play
+          </Link>
+          <p className="text-center text-[10px] text-gray-500 mt-2">
+            PKR 20 minimum deposit · Easypaisa & JazzCash
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
