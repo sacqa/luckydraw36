@@ -36,7 +36,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#10b981" },
+      { name: "theme-color", content: "#ff6b35" },
       { title: "LUCKDROP - Pakistan's #1 Lucky Draw Platform" },
       { name: "description", content: "Win iPhone, bikes, gold and cash from PKR 5. Pakistan's premium lucky draw and rewards platform." },
       { property: "og:title", content: "LUCKDROP - Pakistan's #1 Lucky Draw Platform" },
@@ -53,7 +53,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.json" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" },
     ],
   }),
   shellComponent: RootShell,
