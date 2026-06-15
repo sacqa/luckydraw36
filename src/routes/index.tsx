@@ -325,6 +325,21 @@ function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile sticky CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+        <div className="bg-[#12121a]/95 backdrop-blur-xl border-t border-white/10 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <Link
+            to="/login"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white rounded-2xl font-bold shadow-lg shadow-[#ff6b35]/25 active:scale-[0.97] transition-transform"
+          >
+            <Zap className="h-5 w-5" /> Deposit & Play
+          </Link>
+          <p className="text-center text-[10px] text-gray-500 mt-2">
+            PKR 20 minimum deposit · Easypaisa & JazzCash
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
