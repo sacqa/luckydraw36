@@ -109,8 +109,7 @@ function Landing() {
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[120px]">
           {/* Hero */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          <div
             className="md:col-span-8 md:row-span-4 bg-gradient-to-br from-[#1a1a2e] to-[#08070b] rounded-3xl p-8 md:p-12 flex flex-col justify-center border border-white/5 relative overflow-hidden"
           >
             <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#6c5ce7]/30 blur-[100px]" />
