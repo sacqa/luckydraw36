@@ -142,6 +142,11 @@ function LoginPage() {
                 className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
               <input required type="password" minLength={6} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
                 className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary" />
+              {mode === "signup" && (
+                <input value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase().replace(/\s/g, ""))}
+                  placeholder="Referral code (optional)" maxLength={20}
+                  className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary uppercase tracking-wider" />
+              )}
               <button disabled={loading} type="submit"
                 className="w-full bg-gradient-primary text-primary-foreground font-bold py-3.5 rounded-xl shadow-glow flex items-center justify-center gap-2 disabled:opacity-60">
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
