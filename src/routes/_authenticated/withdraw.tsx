@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Wallet, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, Wallet, Loader2, CheckCircle2, XCircle, Clock, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_authenticated/withdraw")({ component: Wi
 
 const METHODS = ["Easypaisa", "JazzCash", "Bank Transfer"];
 const MIN = 200;
+const KYC_THRESHOLD = 5000;
 
 function WithdrawPage() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ function WithdrawPage() {
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
+  const [kycStatus, setKycStatus] = useState<string | null>(null);
 
   async function load() {
     if (!user) return;
