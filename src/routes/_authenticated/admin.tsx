@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "kyc" | "support" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "broadcast";
+type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "kyc" | "support" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "spin" | "ai" | "broadcast";
 
 const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "stats", label: "Overview", Icon: BarChart3 },
@@ -34,6 +34,8 @@ const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "methods", label: "Payment Methods", Icon: QrCode },
   { id: "banners", label: "Banners", Icon: ImageIcon },
   { id: "homepage", label: "Homepage", Icon: LayoutIcon },
+  { id: "spin", label: "Spin Wheel", Icon: Disc3 },
+  { id: "ai", label: "AI Images", Icon: Wand2 },
   { id: "broadcast", label: "Broadcast", Icon: Megaphone },
 ];
 
