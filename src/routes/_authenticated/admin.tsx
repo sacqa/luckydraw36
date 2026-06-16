@@ -992,6 +992,11 @@ function HomepageTab() {
     await supabase.from("homepage_sections").update({ is_active: !s.is_active, updated_at: new Date().toISOString() }).eq("id", s.id);
     load();
   }
+  async function reorder(id: string, direction: "up" | "down") {
+    const { error } = await supabase.rpc("reorder_homepage_section", { p_id: id, p_direction: direction });
+    if (error) return toast.error(error.message);
+    load();
+  }
 
   return (
     <div className="space-y-4">
