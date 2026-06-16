@@ -4,8 +4,14 @@ import {
   CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone,
   Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck, Activity,
   Layout as LayoutIcon, QrCode, Globe, Eye, Mail, Phone, User as UserIcon, ChevronRight, Shuffle,
-  ArrowUpFromLine, MessageCircle, FileCheck, Send, Clock,
+  ArrowUpFromLine, MessageCircle, FileCheck, Send, Clock, ArrowUp, ArrowDown, Wand2, Disc3, Download,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { useDraft } from "@/hooks/use-draft";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { generateAiImage, saveAiImage } from "@/lib/ai-image.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useDraft } from "@/hooks/use-draft";
