@@ -12,10 +12,8 @@ import { useDraft } from "@/hooks/use-draft";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { generateAiImage, saveAiImage } from "@/lib/ai-image.functions";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
-import { useDraft } from "@/hooks/use-draft";
-import { toast } from "sonner";
+
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
