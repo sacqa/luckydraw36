@@ -27,6 +27,7 @@ function LoginPage() {
   const [phone, setPhone] = useState("+92 ");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +40,11 @@ function LoginPage() {
           email, password,
           options: {
             emailRedirectTo: `${window.location.origin}/home`,
-            data: { full_name: fullName, phone },
+            data: {
+              full_name: fullName,
+              phone,
+              referral_code: referralCode.trim() || null,
+            },
           },
         });
         if (error) throw error;
