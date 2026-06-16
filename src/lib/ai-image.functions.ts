@@ -2,6 +2,18 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+async function assertAdmin(userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Admin only");
+}
+
 const Input = z.object({
   prompt: z.string().min(3).max(2000),
   size: z.enum(["1024x1024", "1536x1024", "1024x1536"]).default("1024x1024"),
@@ -12,12 +24,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data, context }) => {
-    // Admin gate
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Admin only");
+    await assertAdmin(context.userId);
 
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Lovable AI not configured");
@@ -69,11 +76,7 @@ export const saveAiImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => SaveInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Admin only");
+    await assertAdmin(context.userId);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const base64 = data.dataUrl.split(",")[1] ?? "";
