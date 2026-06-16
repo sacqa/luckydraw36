@@ -1018,6 +1018,8 @@ function HomepageTab() {
               {s.body && <p className="text-xs text-muted-foreground line-clamp-3">{s.body}</p>}
               <div className="flex gap-2 pt-1">
                 <button onClick={() => setEditing(s)} className="flex-1 text-xs bg-primary/15 text-primary py-1.5 rounded-lg font-semibold">Edit</button>
+                <button onClick={() => reorder(s.id, "up")} className="text-xs bg-secondary px-2 py-1.5 rounded-lg font-semibold" title="Move up"><ArrowUp className="h-3 w-3" /></button>
+                <button onClick={() => reorder(s.id, "down")} className="text-xs bg-secondary px-2 py-1.5 rounded-lg font-semibold" title="Move down"><ArrowDown className="h-3 w-3" /></button>
                 <button onClick={() => toggle(s)} className="text-xs bg-secondary px-3 py-1.5 rounded-lg font-semibold">{s.is_active ? "Hide" : "Show"}</button>
                 <button onClick={() => del(s.id)} className="text-xs bg-destructive/15 text-destructive px-3 py-1.5 rounded-lg font-semibold"><Trash2 className="h-3 w-3" /></button>
               </div>
