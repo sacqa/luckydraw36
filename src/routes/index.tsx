@@ -91,6 +91,18 @@ const faqs = [
 
 function Landing() {
   const countdown = useCountdown(Date.now() + 4 * 3600_000 + 22 * 60_000 + 15 * 1000);
+  const [customSections, setCustomSections] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("homepage_sections")
+      .select("*")
+      .eq("is_active", true)
+      .in("kind", ["custom", "banner", "cta"])
+      .order("position")
+      .then(({ data }) => setCustomSections(data || []));
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#08070b] text-white pb-28 md:pb-0" style={{ fontFamily: "Poppins, sans-serif" }}>
       {/* Header */}
