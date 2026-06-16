@@ -1045,6 +1045,18 @@ function HomepageEditor({ s, onClose, onSave }: { s: any; onClose: () => void; o
       <div className="bg-background border border-border rounded-3xl max-w-lg w-full p-6 space-y-3 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <h3 className="font-display font-bold text-xl">{s.id ? "Edit section" : "New section"}</h3>
         <input value={v.section_key} onChange={e => setV({ ...v, section_key: e.target.value })} placeholder="section_key (unique, e.g. hero)" className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
+        <select value={v.kind || "custom"} onChange={e => setV({ ...v, kind: e.target.value })}
+          className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm">
+          <option value="custom">Custom content / advertisement</option>
+          <option value="hero">Hero</option>
+          <option value="jackpot">Jackpot</option>
+          <option value="draws_grid">Draws grid</option>
+          <option value="winners">Winners feed</option>
+          <option value="how_it_works">How it works</option>
+          <option value="faq">FAQ</option>
+          <option value="banner">Banner / advertisement</option>
+          <option value="cta">Call-to-action</option>
+        </select>
         <input value={v.title || ""} onChange={e => setV({ ...v, title: e.target.value })} placeholder="Title" className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
         <input value={v.subtitle || ""} onChange={e => setV({ ...v, subtitle: e.target.value })} placeholder="Subtitle" className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
         <textarea value={v.body || ""} onChange={e => setV({ ...v, body: e.target.value })} placeholder="Body / description" rows={3} className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
