@@ -72,7 +72,7 @@ function ProfilePage() {
         {[
           { to: "/vip", Icon: Crown, label: "VIP & Cashback", hint: "Earn rewards on every spend", color: "text-amber-400" },
           { to: "/support", Icon: MessageCircle, label: "Support", hint: "Chat with our team", color: "text-primary" },
-          { to: "/kyc", Icon: ShieldCheck, label: "Identity verification", hint: "Required for big withdrawals", color: "text-emerald-400" },
+          { to: "/kyc", Icon: ShieldCheck, label: "Identity verification", hint: "Required only for PKR 5,000+ withdrawals", color: "text-emerald-400" },
           { to: "/responsible-gaming", Icon: ShieldAlert, label: "Responsible Play", hint: "Spending limits & self-exclusion", color: "text-rose-400" },
         ].map(({ to, Icon, label, hint, color }) => (
           <Link key={to} to={to as any} className="flex items-center gap-3 p-4 hover:bg-secondary/40 transition border-b border-border last:border-0">
