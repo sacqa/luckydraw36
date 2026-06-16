@@ -124,6 +124,8 @@ function AdminPage() {
             {tab === "methods" && <MethodsTab />}
             {tab === "banners" && <BannersTab />}
             {tab === "homepage" && <HomepageTab />}
+            {tab === "spin" && <SpinWheelTab />}
+            {tab === "ai" && <AiImagesTab />}
             {tab === "broadcast" && <BroadcastTab />}
           </div>
         </main>
