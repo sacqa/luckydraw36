@@ -16,6 +16,7 @@ import {
   PartyPopper,
   ChevronDown,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: Landing,
