@@ -77,6 +77,21 @@ function WithdrawPage() {
         <p className="text-[11px] opacity-80 mt-2">Minimum withdrawal PKR {MIN} · Processed within 24h</p>
       </div>
 
+      {Number(amount) >= KYC_THRESHOLD && kycStatus !== "approved" && (
+        <Link to="/kyc" className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 text-sm">
+          <ShieldAlert className="h-5 w-5 text-amber-400 shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-amber-300">KYC required for PKR {KYC_THRESHOLD.toLocaleString()}+ withdrawals</p>
+            <p className="text-[11px] text-amber-200/70">
+              {kycStatus === "pending" ? "Your KYC is under review." :
+               kycStatus === "rejected" ? "Your previous KYC was rejected. Resubmit." :
+               "Tap to verify your identity (takes ~5 minutes)."}
+            </p>
+          </div>
+        </Link>
+      )}
+
+
       <form onSubmit={submit} className="bg-gradient-card border border-border rounded-3xl p-5 space-y-3">
         <div>
           <label className="text-[11px] text-muted-foreground uppercase tracking-wider">Amount (PKR)</label>
