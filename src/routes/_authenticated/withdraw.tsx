@@ -25,12 +25,14 @@ function WithdrawPage() {
 
   async function load() {
     if (!user) return;
-    const [{ data: w }, { data: h }] = await Promise.all([
+    const [{ data: w }, { data: h }, { data: k }] = await Promise.all([
       supabase.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
       supabase.from("withdrawal_requests").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+      supabase.from("kyc_submissions").select("status").eq("user_id", user.id).maybeSingle(),
     ]);
     if (w) setBalance(Number(w.balance));
     if (h) setHistory(h);
+    setKycStatus(k?.status ?? null);
   }
   useEffect(() => { load(); }, [user]);
 
@@ -39,6 +41,11 @@ function WithdrawPage() {
     const amt = Number(amount);
     if (!amt || amt < MIN) return toast.error(`Minimum withdrawal is PKR ${MIN}`);
     if (amt > balance) return toast.error("Amount exceeds balance");
+    if (amt >= KYC_THRESHOLD && kycStatus !== "approved") {
+      toast.error(`KYC verification required for withdrawals of PKR ${KYC_THRESHOLD.toLocaleString()} or more.`);
+      nav({ to: "/kyc" });
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.rpc("request_withdrawal", {
       p_amount: amt, p_method: method, p_title: title.trim(), p_number: number.trim(),
