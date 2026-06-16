@@ -295,6 +295,52 @@ function Landing() {
           ))}
         </section>
 
+        {/* Admin-managed sections (banners, ads, promos, CTAs) */}
+        {customSections.length > 0 && (
+          <section className="mt-16 space-y-6">
+            {customSections.map((s) => (
+              <div key={s.id} className={`rounded-3xl border border-white/5 overflow-hidden ${
+                s.kind === "cta" ? "bg-gradient-to-br from-[#1a1a2e] to-[#08070b] p-8 md:p-12 text-center" :
+                s.kind === "banner" ? "bg-[#12121a]" : "bg-[#12121a] p-6 md:p-8"
+              }`}>
+                {s.kind === "banner" && s.image_url ? (
+                  <a href={s.link_url || "#"} className="block">
+                    <img src={s.image_url} alt={s.title || ""} className="w-full max-h-72 object-cover" loading="lazy" />
+                    {(s.title || s.subtitle) && (
+                      <div className="p-5">
+                        {s.title && <h3 className="font-bold text-lg">{s.title}</h3>}
+                        {s.subtitle && <p className="text-sm text-gray-400 mt-1">{s.subtitle}</p>}
+                      </div>
+                    )}
+                  </a>
+                ) : (
+                  <div className={s.kind === "cta" ? "" : "flex flex-col md:flex-row md:items-center gap-6"}>
+                    {s.image_url && s.kind !== "cta" && (
+                      <img src={s.image_url} alt={s.title || ""} className="w-full md:w-56 h-40 md:h-40 object-cover rounded-2xl" loading="lazy" />
+                    )}
+                    <div className="flex-1">
+                      {s.subtitle && <p className="text-[10px] uppercase tracking-widest text-[#f7931e] font-bold mb-2">{s.subtitle}</p>}
+                      {s.title && (
+                        <h3 className={s.kind === "cta"
+                          ? "text-3xl md:text-4xl font-extrabold mb-3"
+                          : "text-2xl md:text-3xl font-extrabold mb-2"
+                        }>{s.title}</h3>
+                      )}
+                      {s.body && <p className="text-gray-400 text-sm md:text-base mb-4 max-w-2xl mx-auto">{s.body}</p>}
+                      {s.link_url && (
+                        <a href={s.link_url} className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-[#ff6b35] to-[#e84393] rounded-2xl font-bold shadow-lg shadow-[#ff6b35]/30 hover:scale-[1.02] transition-transform">
+                          {s.link_label || "Learn more"} <ArrowRight className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
+
         {/* FAQ */}
         <section className="mt-16 max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8">Questions, <span className="bg-gradient-to-r from-[#e84393] to-[#6c5ce7] bg-clip-text text-transparent">answered</span></h2>
