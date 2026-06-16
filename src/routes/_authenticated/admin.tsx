@@ -4,18 +4,22 @@ import {
   CheckCircle2, XCircle, Sparkles, Trophy, Users, CreditCard, Megaphone,
   Image as ImageIcon, BarChart3, Search, Plus, Trash2, ShieldCheck, Activity,
   Layout as LayoutIcon, QrCode, Globe, Eye, Mail, Phone, User as UserIcon, ChevronRight, Shuffle,
-  ArrowUpFromLine, MessageCircle, FileCheck, Send, Clock,
+  ArrowUpFromLine, MessageCircle, FileCheck, Send, Clock, ArrowUp, ArrowDown, Wand2, Disc3, Download,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useDraft } from "@/hooks/use-draft";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { generateAiImage, saveAiImage } from "@/lib/ai-image.functions";
+
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "kyc" | "support" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "broadcast";
+type Tab = "stats" | "activity" | "deposits" | "withdrawals" | "kyc" | "support" | "games" | "winners" | "users" | "methods" | "banners" | "homepage" | "spin" | "ai" | "broadcast";
 
 const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "stats", label: "Overview", Icon: BarChart3 },
@@ -30,6 +34,8 @@ const TABS: { id: Tab; label: string; Icon: any }[] = [
   { id: "methods", label: "Payment Methods", Icon: QrCode },
   { id: "banners", label: "Banners", Icon: ImageIcon },
   { id: "homepage", label: "Homepage", Icon: LayoutIcon },
+  { id: "spin", label: "Spin Wheel", Icon: Disc3 },
+  { id: "ai", label: "AI Images", Icon: Wand2 },
   { id: "broadcast", label: "Broadcast", Icon: Megaphone },
 ];
 
@@ -118,6 +124,8 @@ function AdminPage() {
             {tab === "methods" && <MethodsTab />}
             {tab === "banners" && <BannersTab />}
             {tab === "homepage" && <HomepageTab />}
+            {tab === "spin" && <SpinWheelTab />}
+            {tab === "ai" && <AiImagesTab />}
             {tab === "broadcast" && <BroadcastTab />}
           </div>
         </main>
@@ -984,6 +992,11 @@ function HomepageTab() {
     await supabase.from("homepage_sections").update({ is_active: !s.is_active, updated_at: new Date().toISOString() }).eq("id", s.id);
     load();
   }
+  async function reorder(id: string, direction: "up" | "down") {
+    const { error } = await supabase.rpc("reorder_homepage_section", { p_id: id, p_direction: direction });
+    if (error) return toast.error(error.message);
+    load();
+  }
 
   return (
     <div className="space-y-4">
@@ -1010,6 +1023,8 @@ function HomepageTab() {
               {s.body && <p className="text-xs text-muted-foreground line-clamp-3">{s.body}</p>}
               <div className="flex gap-2 pt-1">
                 <button onClick={() => setEditing(s)} className="flex-1 text-xs bg-primary/15 text-primary py-1.5 rounded-lg font-semibold">Edit</button>
+                <button onClick={() => reorder(s.id, "up")} className="text-xs bg-secondary px-2 py-1.5 rounded-lg font-semibold" title="Move up"><ArrowUp className="h-3 w-3" /></button>
+                <button onClick={() => reorder(s.id, "down")} className="text-xs bg-secondary px-2 py-1.5 rounded-lg font-semibold" title="Move down"><ArrowDown className="h-3 w-3" /></button>
                 <button onClick={() => toggle(s)} className="text-xs bg-secondary px-3 py-1.5 rounded-lg font-semibold">{s.is_active ? "Hide" : "Show"}</button>
                 <button onClick={() => del(s.id)} className="text-xs bg-destructive/15 text-destructive px-3 py-1.5 rounded-lg font-semibold"><Trash2 className="h-3 w-3" /></button>
               </div>
@@ -1030,6 +1045,18 @@ function HomepageEditor({ s, onClose, onSave }: { s: any; onClose: () => void; o
       <div className="bg-background border border-border rounded-3xl max-w-lg w-full p-6 space-y-3 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <h3 className="font-display font-bold text-xl">{s.id ? "Edit section" : "New section"}</h3>
         <input value={v.section_key} onChange={e => setV({ ...v, section_key: e.target.value })} placeholder="section_key (unique, e.g. hero)" className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
+        <select value={v.kind || "custom"} onChange={e => setV({ ...v, kind: e.target.value })}
+          className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm">
+          <option value="custom">Custom content / advertisement</option>
+          <option value="hero">Hero</option>
+          <option value="jackpot">Jackpot</option>
+          <option value="draws_grid">Draws grid</option>
+          <option value="winners">Winners feed</option>
+          <option value="how_it_works">How it works</option>
+          <option value="faq">FAQ</option>
+          <option value="banner">Banner / advertisement</option>
+          <option value="cta">Call-to-action</option>
+        </select>
         <input value={v.title || ""} onChange={e => setV({ ...v, title: e.target.value })} placeholder="Title" className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
         <input value={v.subtitle || ""} onChange={e => setV({ ...v, subtitle: e.target.value })} placeholder="Subtitle" className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
         <textarea value={v.body || ""} onChange={e => setV({ ...v, body: e.target.value })} placeholder="Body / description" rows={3} className="w-full bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
@@ -1460,6 +1487,222 @@ function SupportTab({ adminId }: { adminId?: string }) {
             </p>
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============ SPIN WHEEL ============ */
+function SpinWheelTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const blank = { label: "", reward_amount: 0, weight: 1, color: "#ff6b35", is_active: true, position: 0 };
+  const [draft, setDraft] = useState<any>(blank);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  async function load() {
+    const { data } = await supabase.from("spin_wheel_options").select("*").order("position");
+    setItems(data || []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function save() {
+    if (!draft.label.trim()) return toast.error("Label required");
+    const payload = { ...draft, reward_amount: Number(draft.reward_amount), weight: Number(draft.weight), position: Number(draft.position) };
+    const { error } = editingId
+      ? await supabase.from("spin_wheel_options").update(payload).eq("id", editingId)
+      : await supabase.from("spin_wheel_options").insert(payload);
+    if (error) return toast.error(error.message);
+    toast.success(editingId ? "Updated" : "Added");
+    setDraft(blank); setEditingId(null); load();
+  }
+  async function del(id: string) {
+    if (!confirm("Delete this reward?")) return;
+    const { error } = await supabase.from("spin_wheel_options").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    load();
+  }
+  async function toggle(o: any) {
+    const { error } = await supabase.from("spin_wheel_options").update({ is_active: !o.is_active }).eq("id", o.id);
+    if (error) return toast.error(error.message);
+    load();
+  }
+
+  const totalWeight = items.filter(i => i.is_active).reduce((a, b) => a + Number(b.weight), 0) || 1;
+
+  return (
+    <div className="grid lg:grid-cols-[420px_1fr] gap-4">
+      <div className="bg-gradient-card border border-border rounded-2xl p-5 space-y-2 h-fit">
+        <h2 className="font-display font-bold flex items-center gap-2"><Disc3 className="h-4 w-4 text-primary" /> {editingId ? "Edit reward" : "Add reward"}</h2>
+        <input value={draft.label} onChange={e => setDraft({ ...draft, label: e.target.value })} placeholder="Label (e.g. PKR 50, JACKPOT)" className="w-full bg-input/50 border border-border rounded-xl px-4 py-2.5 text-sm" />
+        <div className="grid grid-cols-3 gap-2">
+          <input type="number" min="0" value={draft.reward_amount} onChange={e => setDraft({ ...draft, reward_amount: e.target.value })} placeholder="PKR" className="bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
+          <input type="number" min="1" value={draft.weight} onChange={e => setDraft({ ...draft, weight: e.target.value })} placeholder="Weight" className="bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
+          <input type="number" value={draft.position} onChange={e => setDraft({ ...draft, position: e.target.value })} placeholder="Pos" className="bg-input/50 border border-border rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div className="flex items-center gap-2">
+          <input type="color" value={draft.color} onChange={e => setDraft({ ...draft, color: e.target.value })} className="h-10 w-14 rounded-xl border border-border bg-transparent" />
+          <label className="text-xs flex items-center gap-2 flex-1 bg-input/50 border border-border rounded-xl px-3 py-2">
+            <input type="checkbox" checked={draft.is_active} onChange={e => setDraft({ ...draft, is_active: e.target.checked })} /> Active
+          </label>
+        </div>
+        <p className="text-[11px] text-muted-foreground">Higher <strong>weight</strong> = more likely to be picked. Win chance = weight / total active weight.</p>
+        <div className="flex gap-2">
+          {editingId && <button onClick={() => { setEditingId(null); setDraft(blank); }} className="flex-1 bg-secondary py-2 rounded-xl text-sm font-semibold">Cancel</button>}
+          <button onClick={save} className="flex-1 bg-gradient-primary text-primary-foreground font-bold py-2.5 rounded-xl">{editingId ? "Save" : "Add"}</button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground">{items.length} rewards · total active weight {totalWeight}</p>
+        <div className="grid md:grid-cols-2 gap-3">
+          {items.map(o => {
+            const pct = o.is_active ? ((Number(o.weight) / totalWeight) * 100).toFixed(1) : "0";
+            return (
+              <div key={o.id} className="bg-gradient-card border border-border rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full grid place-items-center text-white font-bold text-xs shrink-0" style={{ background: o.color }}>{o.label.slice(0, 4)}</div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold truncate">{o.label} {!o.is_active && <span className="text-[10px] text-muted-foreground">(off)</span>}</p>
+                  <p className="text-[11px] text-muted-foreground">PKR {Number(o.reward_amount).toLocaleString()} · weight {o.weight} · <span className="text-primary font-semibold">{pct}%</span> chance</p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <button onClick={() => { setEditingId(o.id); setDraft(o); }} className="text-xs bg-primary/15 text-primary px-2 py-1 rounded-lg font-semibold">Edit</button>
+                  <button onClick={() => toggle(o)} className="text-xs bg-secondary px-2 py-1 rounded-lg font-semibold">{o.is_active ? "Off" : "On"}</button>
+                  <button onClick={() => del(o.id)} className="text-xs bg-destructive/15 text-destructive px-2 py-1 rounded-lg font-semibold"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ AI IMAGES ============ */
+function AiImagesTab() {
+  const generate = useServerFn(generateAiImage);
+  const saveImg = useServerFn(saveAiImage);
+  const [prompt, setPrompt] = useState("");
+  const [size, setSize] = useState<"1024x1024" | "1536x1024" | "1024x1536">("1024x1024");
+  const [model, setModel] = useState<"openai/gpt-image-1-mini" | "openai/gpt-image-2" | "google/gemini-2.5-flash-image">("openai/gpt-image-1-mini");
+  const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  async function generateImage() {
+    if (prompt.trim().length < 3) return toast.error("Write a longer prompt");
+    setLoading(true); setImage(null);
+    try {
+      const res: any = await generate({ data: { prompt: prompt.trim(), size, model } });
+      setImage(res.dataUrl);
+      setHistory(h => [res.dataUrl, ...h].slice(0, 12));
+    } catch (e: any) {
+      toast.error(e.message || "Generation failed");
+    } finally { setLoading(false); }
+  }
+
+  function downloadImage() {
+    if (!image) return;
+    const a = document.createElement("a");
+    a.href = image;
+    a.download = `luckdrop-ai-${Date.now()}.png`;
+    a.click();
+  }
+
+  async function save(bucket: "banners" | "game-images") {
+    if (!image) return;
+    setSaving(true);
+    try {
+      const res: any = await saveImg({ data: { dataUrl: image, bucket, filename: prompt.slice(0, 40) || "image" } });
+      toast.success(`Saved to ${bucket}`);
+      navigator.clipboard?.writeText(res.url).catch(() => {});
+    } catch (e: any) {
+      toast.error(e.message || "Save failed");
+    } finally { setSaving(false); }
+  }
+
+  const presets = [
+    "Vibrant LUCKDROP Pakistan promo banner: gold coins exploding from a glowing lucky draw ticket, neon orange and pink, dark background, cinematic",
+    "Honda 70cc motorbike prize giveaway hero image, fireworks, confetti, dramatic lighting",
+    "iPhone 15 Pro on a podium with PKR cash flying around, lucky draw celebration",
+    "Wheel of fortune with PKR rewards, glossy 3d, orange gradient, premium gambling poster",
+  ];
+
+  return (
+    <div className="grid lg:grid-cols-[420px_1fr] gap-4">
+      <div className="bg-gradient-card border border-border rounded-2xl p-5 space-y-3 h-fit">
+        <h2 className="font-display font-bold flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" /> Generate image</h2>
+        <p className="text-[11px] text-muted-foreground">Powered by Lovable AI — free for admins, no per-image credit limits.</p>
+        <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe the image you want — banner, prize hero, ad creative…" rows={5}
+          className="w-full bg-input/50 border border-border rounded-xl px-4 py-2.5 text-sm" />
+
+        <div>
+          <p className="text-[10px] uppercase text-muted-foreground tracking-wider mb-1">Quick prompts</p>
+          <div className="flex flex-wrap gap-1">
+            {presets.map(p => (
+              <button key={p} onClick={() => setPrompt(p)} className="text-[10px] bg-secondary px-2 py-1 rounded-full text-muted-foreground hover:text-foreground">{p.slice(0, 32)}…</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <select value={model} onChange={e => setModel(e.target.value as any)} className="bg-input/50 border border-border rounded-xl px-3 py-2 text-xs">
+            <option value="openai/gpt-image-1-mini">Fast (gpt-image-1-mini)</option>
+            <option value="openai/gpt-image-2">High quality (gpt-image-2)</option>
+            <option value="google/gemini-2.5-flash-image">Nano Banana (gemini)</option>
+          </select>
+          <select value={size} onChange={e => setSize(e.target.value as any)} className="bg-input/50 border border-border rounded-xl px-3 py-2 text-xs">
+            <option value="1024x1024">Square 1024×1024</option>
+            <option value="1536x1024">Landscape 1536×1024</option>
+            <option value="1024x1536">Portrait 1024×1536</option>
+          </select>
+        </div>
+
+        <button onClick={generateImage} disabled={loading}
+          className="w-full bg-gradient-primary text-primary-foreground font-bold py-3 rounded-xl inline-flex items-center justify-center gap-2 disabled:opacity-50">
+          {loading ? <><Clock className="h-4 w-4 animate-spin" /> Generating… (10-30s)</> : <><Sparkles className="h-4 w-4" /> Generate</>}
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        <div className="bg-gradient-card border border-border rounded-2xl p-4 min-h-[400px] grid place-items-center">
+          {!image && !loading && (
+            <div className="text-center text-sm text-muted-foreground">
+              <Wand2 className="h-10 w-10 mx-auto mb-3 opacity-40" />
+              Your generated image will appear here.
+            </div>
+          )}
+          {loading && (
+            <div className="text-center text-sm text-muted-foreground">
+              <Clock className="h-10 w-10 mx-auto mb-3 animate-spin text-primary" />
+              Rendering your image…
+            </div>
+          )}
+          {image && (
+            <div className="space-y-3 w-full">
+              <img src={image} alt="AI generated" className="max-w-full max-h-[60vh] mx-auto rounded-2xl" />
+              <div className="flex flex-wrap gap-2 justify-center">
+                <button onClick={downloadImage} className="bg-secondary px-4 py-2 rounded-xl text-sm font-semibold inline-flex items-center gap-1"><Download className="h-4 w-4" /> Download</button>
+                <button onClick={() => save("banners")} disabled={saving} className="bg-primary/15 text-primary px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-50">Save to Banners</button>
+                <button onClick={() => save("game-images")} disabled={saving} className="bg-primary/15 text-primary px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-50">Save to Game images</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {history.length > 0 && (
+          <div>
+            <p className="text-[10px] uppercase text-muted-foreground tracking-wider mb-2">Recent generations (this session)</p>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+              {history.map((src, i) => (
+                <button key={i} onClick={() => setImage(src)} className="aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition">
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

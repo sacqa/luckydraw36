@@ -258,6 +258,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          kind: string
           link_label: string | null
           link_url: string | null
           position: number
@@ -273,6 +274,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          kind?: string
           link_label?: string | null
           link_url?: string | null
           position?: number
@@ -288,6 +290,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          kind?: string
           link_label?: string | null
           link_url?: string | null
           position?: number
@@ -467,6 +470,42 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weekly_spend_limit?: number | null
+        }
+        Relationships: []
+      }
+      spin_wheel_options: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          position: number
+          reward_amount: number
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          position?: number
+          reward_amount: number
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          position?: number
+          reward_amount?: number
+          updated_at?: string
+          weight?: number
         }
         Relationships: []
       }
@@ -889,6 +928,7 @@ export type Database = {
     Functions: {
       claim_daily_spin: { Args: never; Returns: Json }
       claim_weekly_cashback: { Args: never; Returns: Json }
+      kyc_required_threshold: { Args: never; Returns: number }
       process_withdrawal: {
         Args: { p_approve: boolean; p_id: string; p_notes?: string }
         Returns: Json
@@ -896,6 +936,10 @@ export type Database = {
       purchase_ticket: {
         Args: { p_game_id: string; p_qty: number }
         Returns: Json
+      }
+      reorder_homepage_section: {
+        Args: { p_direction: string; p_id: string }
+        Returns: undefined
       }
       request_withdrawal: {
         Args: {

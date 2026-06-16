@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Wallet, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, Wallet, Loader2, CheckCircle2, XCircle, Clock, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_authenticated/withdraw")({ component: Wi
 
 const METHODS = ["Easypaisa", "JazzCash", "Bank Transfer"];
 const MIN = 200;
+const KYC_THRESHOLD = 5000;
 
 function WithdrawPage() {
   const { user } = useAuth();
@@ -20,15 +21,18 @@ function WithdrawPage() {
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
+  const [kycStatus, setKycStatus] = useState<string | null>(null);
 
   async function load() {
     if (!user) return;
-    const [{ data: w }, { data: h }] = await Promise.all([
+    const [{ data: w }, { data: h }, { data: k }] = await Promise.all([
       supabase.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
       supabase.from("withdrawal_requests").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+      supabase.from("kyc_submissions").select("status").eq("user_id", user.id).maybeSingle(),
     ]);
     if (w) setBalance(Number(w.balance));
     if (h) setHistory(h);
+    setKycStatus(k?.status ?? null);
   }
   useEffect(() => { load(); }, [user]);
 
@@ -37,6 +41,11 @@ function WithdrawPage() {
     const amt = Number(amount);
     if (!amt || amt < MIN) return toast.error(`Minimum withdrawal is PKR ${MIN}`);
     if (amt > balance) return toast.error("Amount exceeds balance");
+    if (amt >= KYC_THRESHOLD && kycStatus !== "approved") {
+      toast.error(`KYC verification required for withdrawals of PKR ${KYC_THRESHOLD.toLocaleString()} or more.`);
+      nav({ to: "/kyc" });
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.rpc("request_withdrawal", {
       p_amount: amt, p_method: method, p_title: title.trim(), p_number: number.trim(),
@@ -67,6 +76,21 @@ function WithdrawPage() {
         <p className="text-3xl font-display font-extrabold mt-1">PKR {balance.toLocaleString()}</p>
         <p className="text-[11px] opacity-80 mt-2">Minimum withdrawal PKR {MIN} · Processed within 24h</p>
       </div>
+
+      {Number(amount) >= KYC_THRESHOLD && kycStatus !== "approved" && (
+        <Link to="/kyc" className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 text-sm">
+          <ShieldAlert className="h-5 w-5 text-amber-400 shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-amber-300">KYC required for PKR {KYC_THRESHOLD.toLocaleString()}+ withdrawals</p>
+            <p className="text-[11px] text-amber-200/70">
+              {kycStatus === "pending" ? "Your KYC is under review." :
+               kycStatus === "rejected" ? "Your previous KYC was rejected. Resubmit." :
+               "Tap to verify your identity (takes ~5 minutes)."}
+            </p>
+          </div>
+        </Link>
+      )}
+
 
       <form onSubmit={submit} className="bg-gradient-card border border-border rounded-3xl p-5 space-y-3">
         <div>
