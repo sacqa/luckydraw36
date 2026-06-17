@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Sparkles, TrendingUp, Wallet } from "lucide-react";
+import { Bell, Sparkles, TrendingUp, Wallet, Flame, Trophy, ArrowRight, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { GameCard, type Game } from "@/components/GameCard";
@@ -41,6 +41,7 @@ function HomePage() {
   }, [user]);
 
   const featured = games.filter(g => g.featured);
+  const hot = games.filter(g => !g.featured && (g.filled_slots / Math.max(1,g.total_slots)) >= 0.6).slice(0, 4);
   const others = games.filter(g => !g.featured);
 
   const tickerItems = useMemo(() => {
@@ -56,49 +57,121 @@ function HomePage() {
   }, [games, winners]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-6">
+      {/* Compact header */}
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-        <div>
-          <p className="text-xs text-muted-foreground">Assalam-o-Alaikum</p>
-          <p className="font-display font-bold">Ready to win? 🎉</p>
+        <div className="min-w-0">
+          <p className="text-[11px] text-muted-foreground">Assalam-o-Alaikum</p>
+          <p className="font-display font-bold truncate">Ready to win? 🎉</p>
         </div>
-        <Link to="/notifications" className="w-10 h-10 grid place-items-center glass rounded-full">
-          <Bell className="h-5 w-5" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/wallet" className="glass rounded-full pl-3 pr-1 py-1 flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground">PKR</span>
+            <span className="text-sm font-bold">{balance.toLocaleString()}</span>
+            <Link to="/deposit" className="w-7 h-7 grid place-items-center bg-gradient-primary rounded-full text-primary-foreground">
+              <Plus className="h-4 w-4" />
+            </Link>
+          </Link>
+          <Link to="/notifications" className="w-10 h-10 grid place-items-center glass rounded-full">
+            <Bell className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
 
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-        className="mx-5 bg-gradient-primary rounded-3xl p-5 shadow-glow text-primary-foreground">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs opacity-80 flex items-center gap-1"><Wallet className="h-3 w-3" /> Wallet balance</p>
-            <p className="text-3xl font-display font-extrabold mt-1">PKR {balance.toLocaleString()}</p>
-          </div>
-          <Link to="/deposit" className="bg-background/20 backdrop-blur px-4 py-2 rounded-full text-sm font-bold">+ Deposit</Link>
-        </div>
-        <div className="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
-          <Link to="/wallet" className="bg-background/15 rounded-xl py-2">Transactions</Link>
-          <Link to="/winners" className="bg-background/15 rounded-xl py-2">Winners</Link>
-          <Link to="/profile" className="bg-background/15 rounded-xl py-2">Referrals</Link>
-        </div>
-      </motion.div>
-
       {tickerItems.length > 0 && (
-        <div className="px-5 pt-4">
+        <div className="px-5 pb-3">
           <JackpotTicker items={tickerItems} />
         </div>
       )}
 
+      {/* HERO: Featured draw front-and-center */}
+      {featured.length > 0 ? (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          className="px-5"
+        >
+          <div className="flex items-center justify-between mb-2.5">
+            <h2 className="font-display font-bold flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Featured draws
+            </h2>
+            <Link to="/winners" className="text-[11px] text-primary font-semibold inline-flex items-center gap-1">
+              See winners <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
+            {featured.map(g => (
+              <div key={g.id} className="min-w-[86%] snap-start">
+                <GameCard game={g} />
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      ) : games[0] ? (
+        <section className="px-5">
+          <GameCard game={games[0]} />
+        </section>
+      ) : null}
+
+      {/* HOT now — quick-grab strip */}
+      {hot.length > 0 && (
+        <section className="px-5 pt-5">
+          <div className="flex items-center justify-between mb-2.5">
+            <h2 className="font-display font-bold flex items-center gap-2">
+              <Flame className="h-4 w-4 text-[#ff6b35]" /> Hot right now
+            </h2>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">filling fast</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {hot.map(g => <GameCard key={g.id} game={g} />)}
+          </div>
+        </section>
+      )}
+
+      {/* Wallet + quick actions card (now compact, below the action) */}
+      <section className="px-5 pt-5">
+        <motion.div initial={{ scale: 0.97, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          className="bg-gradient-primary rounded-3xl p-4 shadow-glow text-primary-foreground">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] opacity-80 flex items-center gap-1"><Wallet className="h-3 w-3" /> Wallet balance</p>
+              <p className="text-2xl font-display font-extrabold mt-0.5">PKR {balance.toLocaleString()}</p>
+            </div>
+            <Link to="/deposit" className="bg-background/20 backdrop-blur px-4 py-2 rounded-full text-sm font-bold">+ Deposit</Link>
+          </div>
+          <div className="grid grid-cols-4 gap-2 mt-3 text-center text-[11px]">
+            <Link to="/wallet" className="bg-background/15 rounded-xl py-2">History</Link>
+            <Link to="/withdraw" className="bg-background/15 rounded-xl py-2">Withdraw</Link>
+            <Link to="/winners" className="bg-background/15 rounded-xl py-2">Winners</Link>
+            <Link to="/profile" className="bg-background/15 rounded-xl py-2">Referrals</Link>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Daily spin */}
       <div className="px-5 pt-4">
         <DailySpinCard />
       </div>
 
-      <div className="px-5 pt-4">
+      {/* All draws */}
+      {others.length > hot.length && (
+        <section className="px-5 pt-6">
+          <h2 className="font-display font-bold mb-3 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" /> All draws
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {others.filter(g => !hot.find(h => h.id === g.id)).map(g => <GameCard key={g.id} game={g} />)}
+          </div>
+        </section>
+      )}
+
+      {/* Live activity */}
+      <div className="px-5 pt-6">
         <LiveActivityFeed />
       </div>
 
+      {/* Admin CMS sections (ads/banners) — pushed to the bottom so games lead */}
       {sections.length > 0 && (
-        <div className="px-5 pt-5 space-y-3">
+        <div className="px-5 pt-6 space-y-3">
           {sections.map(s => (
             <div key={s.id} className="bg-gradient-card border border-border rounded-2xl overflow-hidden">
               {s.image_url && <img src={s.image_url} className="w-full h-32 object-cover" alt={s.title || ""} />}
@@ -115,27 +188,12 @@ function HomePage() {
         </div>
       )}
 
-      {featured.length > 0 && (
-        <section className="px-5 pt-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display font-bold flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Featured draws</h2>
-          </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-2">
-            {featured.map(g => <div key={g.id} className="min-w-[80%] snap-start"><GameCard game={g} /></div>)}
-          </div>
-        </section>
-      )}
-
-      <section className="px-5 pt-6">
-        <h2 className="font-display font-bold mb-3 flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" /> All draws</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {others.map(g => <GameCard key={g.id} game={g} />)}
-        </div>
-      </section>
-
+      {/* Recent winners */}
       {winners.length > 0 && (
-        <section className="px-5 pt-8">
-          <h2 className="font-display font-bold mb-3">Recent winners 🏆</h2>
+        <section className="px-5 pt-6">
+          <h2 className="font-display font-bold mb-3 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-primary" /> Recent winners
+          </h2>
           <div className="space-y-2">
             {winners.map(w => (
               <div key={w.id} className="bg-gradient-card border border-border rounded-2xl p-3 flex items-center gap-3">
