@@ -7,25 +7,24 @@ type AuthSearch = {
   ref?: string;
 };
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>): AuthSearch => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
     mode: search.mode === "signup" ? "signup" : search.mode === "login" ? "login" : undefined,
     ref: typeof search.ref === "string" ? search.ref : undefined,
   }),
-  component: LoginPage,
+  component: SignInPage,
   head: () => ({
     meta: [
       { title: "Sign in — LUCKDROP" },
-      { name: "description", content: "Sign in or create your LUCKDROP account to start winning prizes from PKR 5." },
+      { name: "description", content: "Sign in to your LUCKDROP account to start winning prizes from PKR 5." },
       { property: "og:title", content: "Sign in — LUCKDROP" },
-      { property: "og:description", content: "Sign in or create your LUCKDROP account to start winning prizes from PKR 5." },
-      { property: "og:url", content: "https://luck5.lovable.app/login" },
+      { property: "og:url", content: "https://luck5.lovable.app/sign-in" },
     ],
-    links: [{ rel: "canonical", href: "https://luck5.lovable.app/login" }],
+    links: [{ rel: "canonical", href: "https://luck5.lovable.app/sign-in" }],
   }),
 });
 
-function LoginPage() {
+function SignInPage() {
   return <AuthForm defaultMode="login" />;
 }

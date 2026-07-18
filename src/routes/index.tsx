@@ -113,9 +113,14 @@ function Landing() {
           </div>
           <span className="text-2xl font-extrabold tracking-tight">LUCK<span className="text-[#e84393]">DROP</span></span>
         </Link>
-        <Link to="/login" className="px-5 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm font-semibold border border-white/10 transition-all">
-          Sign In
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/sign-in" className="px-5 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm font-semibold border border-white/10 transition-all">
+            Sign In
+          </Link>
+          <Link to="/sign-up" className="px-5 py-2 bg-gradient-to-r from-[#ff6b35] to-[#e84393] rounded-full text-sm font-semibold transition-all hover:scale-[1.02]">
+            Sign Up
+          </Link>
+        </div>
       </header>
 
       {/* BENTO */}
@@ -140,7 +145,7 @@ function Landing() {
               Pakistan's most trusted lucky draw platform. Win iPhones, heavy bikes, gold and cash prizes from just PKR 5.
             </p>
             <div className="flex flex-wrap gap-3 relative z-10">
-              <Link to="/login" className="px-7 py-3.5 bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white rounded-2xl font-bold shadow-xl shadow-[#ff6b35]/30 hover:scale-[1.02] transition-transform inline-flex items-center gap-2">
+              <Link to="/sign-up" className="px-7 py-3.5 bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white rounded-2xl font-bold shadow-xl shadow-[#ff6b35]/30 hover:scale-[1.02] transition-transform inline-flex items-center gap-2">
                 Play Now <ArrowRight className="h-4 w-4" />
               </Link>
               <a href="#how" className="px-7 py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold border border-white/10 transition-all">
@@ -363,7 +368,7 @@ function Landing() {
           <div className="relative z-10">
             <h2 className="text-3xl md:text-5xl font-extrabold mb-3">Your <span className="bg-gradient-to-r from-[#ff6b35] via-[#e84393] to-[#6c5ce7] bg-clip-text text-transparent">winning ticket</span> is waiting.</h2>
             <p className="text-gray-400 mb-7 max-w-xl mx-auto">Join 12,000+ Pakistanis playing daily. Sign up free, deposit from PKR 20.</p>
-            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#e84393] rounded-2xl font-bold shadow-xl shadow-[#ff6b35]/30 hover:scale-[1.02] transition-transform">
+            <Link to="/sign-up" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#ff6b35] to-[#e84393] rounded-2xl font-bold shadow-xl shadow-[#ff6b35]/30 hover:scale-[1.02] transition-transform">
               Claim your seat <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
